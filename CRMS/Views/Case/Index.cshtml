@@ -1,0 +1,65 @@
+@model IEnumerable<CRMS.Models.Case>
+@{
+    ViewData["Title"] = "Cases";
+    Layout = "_ContentNavbarLayout";
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="py-3 mb-4">Case Management</h4>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Cases</h5>
+            <a href="@Url.Action("Create", "Case")" class="btn btn-primary">
+                <i class="bx bx-plus me-1"></i> Add New Case
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive text-nowrap">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Case ID</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Created Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.CaseId</td>
+                                <td>@item.Title</td>
+                                <td>
+                                    <span class="badge bg-label-@(item.Status.ToLower() == "open" ? "success" : item.Status.ToLower() == "closed" ? "danger" : "warning")">@item.Status</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-label-@(item.Priority.ToLower() == "high" ? "danger" : item.Priority.ToLower() == "medium" ? "warning" : "info")">@item.Priority</span>
+                                </td>
+                                <td>@item.CreatedDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                            <i class="bx bx-dots-vertical-rounded"></i>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="@Url.Action("Details", new { id = item.CaseId })">
+                                                <i class="bx bx-show-alt me-1"></i> View
+                                            </a>
+                                            <a class="dropdown-item" href="@Url.Action("Edit", new { id = item.CaseId })">
+                                                <i class="bx bx-edit-alt me-1"></i> Edit
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

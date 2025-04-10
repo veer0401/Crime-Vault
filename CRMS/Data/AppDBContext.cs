@@ -16,7 +16,7 @@ namespace CRMS.Data
         public DbSet<Team> Teams { get; set; }
         public DbSet<TeamMember> TeamMembers { get; set; }
         public DbSet<Case> Cases { get; set; }
-        public DbSet<Evidence> Evidence { get; set; }
+        public DbSet<CRMS.Models.Evidence> Evidence { get; set; }
         public DbSet<Victim> Victims { get; set; }
         public DbSet<Witness> Witnesses { get; set; }
         public DbSet<CaseCriminal> CaseCriminals { get; set; }
@@ -38,6 +38,57 @@ namespace CRMS.Data
                 .HasOne(tm => tm.User)
                 .WithMany(u => u.TeamMembers)
                 .HasForeignKey(tm => tm.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure many-to-many relationship between Case and Criminal
+            modelBuilder.Entity<CaseCriminal>()
+                .HasKey(cc => new { cc.CaseId, cc.CriminalId });
+
+            modelBuilder.Entity<CaseCriminal>()
+                .HasOne(cc => cc.Case)
+                .WithMany(c => c.CaseCriminals)
+                .HasForeignKey(cc => cc.CaseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CaseCriminal>()
+                .HasOne(cc => cc.Criminal)
+                .WithMany()
+                .HasForeignKey(cc => cc.CriminalId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure many-to-many relationship between Case and Team
+            modelBuilder.Entity<CaseTeam>()
+                .HasKey(ct => new { ct.CaseId, ct.TeamId });
+
+            modelBuilder.Entity<CaseTeam>()
+                .HasOne(ct => ct.Case)
+                .WithMany(c => c.CaseTeams)
+                .HasForeignKey(ct => ct.CaseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CaseTeam>()
+                .HasOne(ct => ct.Team)
+                .WithMany(t => t.CaseTeams)
+                .HasForeignKey(ct => ct.TeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure one-to-many relationships for Case
+            modelBuilder.Entity<CRMS.Models.Evidence>()
+                .HasOne(e => e.Case)
+                .WithMany(c => c.Evidences)
+                .HasForeignKey(e => e.CaseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Witness>()
+                .HasOne(w => w.Case)
+                .WithMany(c => c.Witnesses)
+                .HasForeignKey(w => w.CaseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Victim>()
+                .HasOne(v => v.Case)
+                .WithMany(c => c.Victims)
+                .HasForeignKey(v => v.CaseId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

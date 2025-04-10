@@ -4,6 +4,7 @@ using CRMS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CRMS.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250410082118_AddCaseManagementModels")]
+    partial class AddCaseManagementModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,9 +32,6 @@ namespace CRMS.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("CloseDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -56,9 +56,6 @@ namespace CRMS.Migrations
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -157,19 +154,11 @@ namespace CRMS.Migrations
                     b.Property<string>("KnownHabits")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("LastKnownLocation")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PsychologicalProfile")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("WeaponUsed")
@@ -614,7 +603,7 @@ namespace CRMS.Migrations
                         .IsRequired();
 
                     b.HasOne("CRMS.Models.Team", "Team")
-                        .WithMany("CaseTeams")
+                        .WithMany()
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -753,8 +742,6 @@ namespace CRMS.Migrations
 
             modelBuilder.Entity("CRMS.Models.Team", b =>
                 {
-                    b.Navigation("CaseTeams");
-
                     b.Navigation("TeamMembers");
                 });
 

@@ -61,16 +61,54 @@ namespace CRMS.Controllers
         // Show Team Details Page
         public async Task<IActionResult> Details(Guid id)
         {
-            var team = await _context.Teams
-                .Include(t => t.TeamMembers)
-                .ThenInclude(tm => tm.User)
-                .Include(t => t.TeamLeader)
-                .FirstOrDefaultAsync(t => t.Id == id);
+            try
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser == null)
+                    return Unauthorized();
 
-            if (team == null)
-                return NotFound();
+                var team = await _context.Teams
+                    .Include(t => t.TeamMembers)
+                    .ThenInclude(tm => tm.User)
+                    .Include(t => t.TeamLeader)
+                    .Include(t => t.CaseTeams)
+                    .ThenInclude(ct => ct.Case)
+                    .FirstOrDefaultAsync(t => t.Id == id);
 
-            return View(team);
+                if (team == null)
+                    return NotFound();
+
+                // Check if user is team member or leader
+                bool isTeamMember = team.TeamMembers.Any(tm => tm.UserId == currentUser.Id) || 
+                                   team.TeamLeaderId == currentUser.Id;
+
+                if (!isTeamMember)
+                    return Forbid();
+
+                ViewBag.TeamId = id;
+                ViewBag.IsTeamLeader = team.TeamLeaderId == currentUser.Id;
+                ViewBag.CurrentUserId = currentUser.Id;
+
+                // Get all cases assigned to this team
+                var assignedCases = team.CaseTeams
+                    .Select(ct => new
+                    {
+                        ct.Case.Id,
+                        ct.Case.Title,
+                        ct.Case.Status,
+                        ct.Case.Priority,
+                        AssignedDate = ct.AssignedDate
+                    })
+                    .ToList();
+
+                ViewBag.AssignedCases = assignedCases;
+                return View(team);
+            }
+            catch (Exception ex)
+            {
+                // Log the error
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         // Show all teams with optional filtering
@@ -99,6 +137,8 @@ namespace CRMS.Controllers
                 .Include(t => t.TeamMembers)
                 .ThenInclude(tm => tm.User)
                 .Include(t => t.TeamLeader)
+                .Include(t => t.CaseTeams)
+                .ThenInclude(ct => ct.Case)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
             if (team == null)
@@ -116,27 +156,48 @@ namespace CRMS.Controllers
                 .Where(u => !teamMemberIds.Contains(u.Id))
                 .ToListAsync();
 
+            // Get all cases assigned to this team
+            var assignedCases = team.CaseTeams
+                .Select(ct => ct.Case)
+                .ToList();
+
             ViewBag.AvailableUsers = availableUsers;
+            ViewBag.AssignedCases = assignedCases;
             return View(team);
         }
 
         // Handle Team Member Addition
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddMember(Guid teamId, string userId)
         {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Edit), new { id = teamId });
+            }
+
             if (string.IsNullOrEmpty(userId))
             {
                 TempData["Error"] = "User selection is required.";
                 return RedirectToAction(nameof(Edit), new { id = teamId });
             }
 
-            var team = await _context.Teams.FindAsync(teamId);
+            var team = await _context.Teams
+                .Include(t => t.TeamMembers)
+                .FirstOrDefaultAsync(t => t.Id == teamId);
+
             if (team == null)
+            {
+                TempData["Error"] = "Team not found.";
                 return NotFound();
+            }
 
             var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (team.TeamLeaderId != currentUserId)
+            {
+                TempData["Error"] = "You are not authorized to modify this team.";
                 return Forbid();
+            }
 
             // Check if user exists
             var user = await _userManager.FindByIdAsync(userId);
@@ -147,11 +208,16 @@ namespace CRMS.Controllers
             }
 
             // Check if user is already a member
-            var existingMember = await _context.TeamMembers
-                .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
-            if (existingMember != null)
+            if (team.TeamMembers.Any(tm => tm.UserId == userId))
             {
                 TempData["Error"] = "User is already a member of this team.";
+                return RedirectToAction(nameof(Edit), new { id = teamId });
+            }
+
+            // Check if user is the team leader
+            if (team.TeamLeaderId == userId)
+            {
+                TempData["Error"] = "Team leader cannot be added as a team member.";
                 return RedirectToAction(nameof(Edit), new { id = teamId });
             }
 
@@ -167,13 +233,21 @@ namespace CRMS.Controllers
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Team member added successfully.";
             }
+            catch (DbUpdateException ex)
+            {
+                _context.Entry(team).State = EntityState.Detached;
+                TempData["Error"] = "An error occurred while adding the team member. Please try again.";
+                // Log the exception details here
+            }
             catch (Exception ex)
             {
-                TempData["Error"] = "An error occurred while adding the team member.";
-                // Log the exception details here if needed
+                _context.Entry(team).State = EntityState.Detached;
+                TempData["Error"] = "An unexpected error occurred. Please try again.";
+                // Log the exception details here
             }
 
             return RedirectToAction(nameof(Edit), new { id = teamId });
+
         }
 
         // Handle Team Member Removal

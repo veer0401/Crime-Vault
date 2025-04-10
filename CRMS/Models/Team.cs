@@ -6,6 +6,7 @@ namespace CRMS.Models
     public class Team
     {
         [Key]
+        [ForeignKey("Team")]
         public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
@@ -21,8 +22,11 @@ namespace CRMS.Models
         [ForeignKey("TeamLeaderId")]
         public virtual Users TeamLeader { get; set; }
 
+        // Alias property for view compatibility
+        public Users Leader => TeamLeader;
+
         // Many-to-many with cases (teams working on multiple cases)
-        //public virtual ICollection<Case> Cases { get; set; } = new List<Case>();
+        public virtual ICollection<CaseTeam> CaseTeams { get; set; } = new List<CaseTeam>();
 
         // Navigation to team members (separate from leader)
         public virtual ICollection<TeamMember> TeamMembers { get; set; } = new List<TeamMember>();

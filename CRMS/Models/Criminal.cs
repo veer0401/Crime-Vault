@@ -23,6 +23,8 @@ namespace CRMS.Models
         public string? KnownHabits { get; set; } // Nullable
         public string? PsychologicalProfile { get; set; } // Nullable
         public string? Address { get; set; } // Nullable (Location)
+        public string Status { get; set; } = "At Large"; // Criminal's current status
+        public string LastKnownLocation { get; set; } = string.Empty; // Last known location of the criminal
 
         public bool Caught { get; set; }
 
