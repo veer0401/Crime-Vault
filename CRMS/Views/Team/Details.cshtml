@@ -1,34 +1,48 @@
-﻿@{
+﻿@model CRMS.Models.Team
+@{
     ViewData["Title"] = "Team Details";
 }
 
-<h2 id="teamName"></h2>
-<p><strong>Team Leader:</strong> <span id="teamLeader"></span></p>
-
-<h3>Team Members</h3>
-<ul id="teamMembers"></ul>
-
-<a asp-action="Index">Back to Teams</a>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const teamId = "@ViewBag.TeamId"; // Get team ID from Razor ViewBag
-
-        fetch(`/api/TeamApi/details/${teamId}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("teamName").innerText = data.name;
-                document.getElementById("teamLeader").innerText = data.teamLeader;
-
-                let membersList = document.getElementById("teamMembers");
-                membersList.innerHTML = "";
-
-                data.members.forEach(member => {
-                    let li = document.createElement("li");
-                    li.innerText = member.fullName;
-                    membersList.appendChild(li);
-                });
-            })
-            .catch(error => console.error("Error fetching team details:", error));
-    });
-</script>
+<div class="container py-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">@Model.Name</h2>
+            <span class="badge bg-light text-dark">Team Code: @Model.TeamCode</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Team Leader</h4>
+                    <p class="lead">@Model.TeamLeader.FullName</p>
+                    
+                    <h4 class="mt-4">Team Members</h4>
+                    <div class="list-group">
+                        @foreach (var member in Model.TeamMembers)
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@member.User.FullName</span>
+                                <span class="badge bg-secondary">Member</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h4>Team Statistics</h4>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <p><strong>Total Members:</strong> @(Model.TeamMembers.Count + 1)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a asp-action="AllTeams" class="btn btn-secondary">Back to Teams</a>
+            @if (Model.TeamLeaderId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit Team</a>
+            }
+        </div>
+    </div>
+</div>

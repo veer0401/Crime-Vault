@@ -142,19 +142,43 @@
                 <div data-i18n="Teams">Teams</div>
             </a>
             <ul class="menu-sub">
-                <li class='menu-item@(currentPage == "/Team/Yourteam" ? " active" : "")'>
+                <!-- Teams You Lead -->
+                <li class='menu-item@(currentPage == "/Team/YourTeams" || currentPage.StartsWith("/Team/Details") ? " active" : "")'>
                     <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <div data-i18n="Your Teams">Your Teams</div>
-
+                        <i class="menu-icon tf-icons ti ti-crown"></i>
+                        <div data-i18n="Teams You Lead">Teams You Lead</div>
                     </a>
+                    <ul class="menu-sub">
+                        <li class='menu-item@(currentPage == "/Team/LeadingTeams" ? " active" : "")'>
+                            <a asp-controller="Team" asp-action="LeadingTeams" class="menu-link">
+                                <div data-i18n="View Teams">View Teams</div>
+                            </a>
+                        </li>
+                        <li class='menu-item@(currentPage == "/Team/Create" ? " active" : "")'>
+                            <a asp-controller="Team" asp-action="Create" class="menu-link">
+                                <div data-i18n="Create Team">Create Team</div>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
+                <!-- Teams You're Member Of -->
+                <li class='menu-item@(currentPage == "/Team/MemberTeams" || currentPage.StartsWith("/Team/Details") ? " active" : "")'>
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons ti ti-users"></i>
+                        <div data-i18n="Member Teams">Member Teams</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class='menu-item@(currentPage == "/Team/MemberTeams" ? " active" : "")'>
+                            <a asp-controller="Team" asp-action="MemberTeams" class="menu-link">
+                                <div data-i18n="View Teams">View Teams</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- All Teams -->
                 <li class='menu-item@(currentPage == "/Team/AllTeams" ? " active" : "")'>
-                    <a asp-controller="Teams" asp-action="AllTeams" class="menu-link">
-                        <div data-i18n="All Teams">All Teams</div>
-                    </a>
-                </li>
-                <li class='menu-item@(currentPage == "/Team/Create" ? " active" : "")'>
-                    <a asp-controller="Team" asp-action="Create" class="menu-link">
+                    <a asp-controller="Team" asp-action="AllTeams" class="menu-link">
+                        <i class="menu-icon tf-icons ti ti-list-search"></i>
                         <div data-i18n="All Teams">All Teams</div>
                     </a>
                 </li>

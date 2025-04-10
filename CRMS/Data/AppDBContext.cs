@@ -15,12 +15,12 @@ namespace CRMS.Data
         public DbSet<Criminal> Criminal { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<TeamMember> TeamMembers { get; set; }
-        //public DbSet<Case> Cases { get; set; }
-        //public DbSet<Evidences> Evidences { get; set; }
-        //public DbSet<Suspect> Suspects { get; set; }
-        //public DbSet<Victim> Victims { get; set; }
-        //public DbSet<Witness> Witnesses { get; set; }
-        //public DbSet<CriminalCase> CriminalCases { get; set; }
+        public DbSet<Case> Cases { get; set; }
+        public DbSet<Evidence> Evidence { get; set; }
+        public DbSet<Victim> Victims { get; set; }
+        public DbSet<Witness> Witnesses { get; set; }
+        public DbSet<CaseCriminal> CaseCriminals { get; set; }
+        public DbSet<CaseTeam> CaseTeams { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

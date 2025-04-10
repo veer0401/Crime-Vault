@@ -1,0 +1,57 @@
+@model IEnumerable<CRMS.Models.Team>
+@{
+    ViewData["Title"] = "All Teams";
+}
+
+<div class="container py-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">All Teams</h2>
+        </div>
+
+        <div class="card-body">
+            <!-- Search Form -->
+            <form asp-action="AllTeams" method="get" class="mb-4">
+                <div class="input-group">
+                    <input type="text" name="searchName" class="form-control" placeholder="Search by team name..." value="@ViewBag.SearchName">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    @if (!string.IsNullOrEmpty(ViewBag.SearchName))
+                    {
+                        <a asp-action="AllTeams" class="btn btn-secondary">Clear</a>
+                    }
+                </div>
+            </form>
+
+            <!-- Teams Table -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Team Name</th>
+                            <th>Team Leader</th>
+                            <th>Members</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var team in Model)
+                        {
+                            <tr>
+                                <td>@team.Name</td>
+                                <td>@team.TeamLeader.FullName</td>
+                                <td>@(team.TeamMembers.Count + 1) members</td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@team.Id" class="btn btn-info btn-sm">Details</a>
+                                    @if (team.TeamLeaderId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@team.Id" class="btn btn-primary btn-sm">Edit</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

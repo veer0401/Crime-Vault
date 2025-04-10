@@ -1,0 +1,74 @@
+@model CRMS.Models.Team
+@{
+    ViewData["Title"] = "Edit Team";
+    var availableUsers = ViewBag.AvailableUsers as IEnumerable<CRMS.Models.Users>;
+}
+
+<div class="container py-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Edit Team: @Model.Name</h2>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Current Members</h4>
+                    <div class="list-group mb-4">
+                        <!-- Team Leader -->
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@Model.TeamLeader.FullName</span>
+                            <span class="badge bg-primary">Team Leader</span>
+                        </div>
+
+                        <!-- Team Members -->
+                        @foreach (var member in Model.TeamMembers)
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@member.User.FullName</span>
+                                <form asp-action="RemoveMember" method="post" style="display: inline;">
+                                    <input type="hidden" name="teamId" value="@Model.Id" />
+                                    <input type="hidden" name="userId" value="@member.UserId" />
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Are you sure you want to remove this member?')">
+                                        Remove
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h4>Add New Member</h4>
+                    @if (availableUsers.Any())
+                    {
+                        <form asp-action="AddMember" method="post">
+                            <input type="hidden" name="teamId" value="@Model.Id" />
+                            <div class="mb-3">
+                                <select name="userId" class="form-select">
+                                    <option value="">Select a user...</option>
+                                    @foreach (var user in availableUsers)
+                                    {
+                                        <option value="@user.Id">@user.FullName</option>
+                                    }
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">Add Member</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            No available users to add to the team.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Back to Details</a>
+        </div>
+    </div>
+</div>
