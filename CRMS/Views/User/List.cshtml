@@ -1,0 +1,44 @@
+﻿
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/datatables-bs5/datatables.bootstrap5.css">
+
+    <link rel="stylesheet" href="~/vendor/libs/animate-css/animate.css" />
+    <link rel="stylesheet" href="~/vendor/libs/sweetalert2/sweetalert2.css" />
+    <link rel="stylesheet" href="~/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css">
+    <link rel="stylesheet" href="~/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css">
+}
+
+@section VendorScripts {
+    <script src="~/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/dataTables.buttons.min.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.min.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/jszip.min.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/pdfmake.min.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/vfs_fonts.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/buttons.html5.min.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/buttons.print.min.js"></script>
+}
+
+@section PageScripts {
+    <script src="~/js/app-user-viewlist.js"></script>
+    <!-- Include SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <!-- Include SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+}
+
+<h2>User List</h2>
+
+<table id="userTable" border="1">
+    <thead>
+        <tr>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Roles</th>
+            <th>Member Since</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>

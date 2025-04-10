@@ -1,0 +1,72 @@
+﻿@using CRMS.ViewModels;
+@model LoginViewModel;
+
+@{
+    Layout = "_BlankLayout";
+    ViewData["Title"] = "Login Page";
+}
+
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/;form-validation/form-validation.css" />
+}
+
+@section VendorScripts {
+    <script src="~/vendor/libs/;form-validation/popular.js"></script>
+    <script src="~/vendor/libs/;form-validation/bootstrap5.js"></script>
+    <script src="~/vendor/libs/;form-validation/auto-focus.js"></script>
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/vendor/css/pages/page-auth.css">
+}
+
+@section PageScripts {
+    <script src="~/js/pages-auth.js"></script>
+}
+@* ************** Content ************** *@
+<div class="container-xxl">
+    <div class="authentication-wrapper authentication-basic container-p-y">
+        <div class="authentication-inner py-6">
+            <!-- Login -->
+            <div class="card">
+                <div class="card-body">
+                    <!-- Logo -->
+                    <div class="app-brand justify-content-center mb-6">
+                        <a href="/" class="app-brand-link">
+                            <span class="app-brand-logo demo">@await Html.PartialAsync("../_Partials/_Macros")</span>
+                            <span class="app-brand-text demo text-heading fw-bold">@TempData.Peek("appName")</span>
+                        </a>
+                    </div>
+                    <!-- /Logo -->
+                    <h4 class="mb-1">Welcome to @TempData.Peek("appName")!</h4>
+                    <p class="mb-6">Please Log-in to your account </p>
+
+                    <form id="formAuthentication" class="mb-4" method="POST" asp-action="Login">
+
+                        <div class="mb-6">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" type="text" class="form-control" id="email" name="Email" placeholder="Enter your email " autofocus required>
+                        </div>
+                        <div class="mb-6 form-password-toggle">
+                            <label class="form-label" asp-for="Password">Password</label>
+                            <div class="input-group input-group-merge">
+                                <input asp-for="Password" type="password" id="password" class="form-control" name="Password" placeholder="••••••••••" aria-describedby="password" required />
+                                <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <button class="btn btn-primary d-grid w-100" value="Login" type="submit">Login</button>
+                        </div>
+                    </form>
+
+
+                </div>
+            </div>
+            <!-- /Register -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

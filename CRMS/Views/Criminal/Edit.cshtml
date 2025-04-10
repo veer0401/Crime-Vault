@@ -1,0 +1,109 @@
+﻿@model CriminalDTO
+
+<form method="post" enctype="multipart/form-data">
+    <div class="col-md-12">
+        <div class="card">
+            <h5 class="card-header">Edit Criminal Information</h5>
+            <div class="card-body">
+                <!-- Name Field -->
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="floatingInput" placeholder="Criminal Name" asp-for="Name" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                    <label for="floatingInput">Name</label>
+                </div>
+
+                <!-- Alias Field -->
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="floatingAlias" placeholder="Alias" asp-for="Alias" />
+                    <span asp-validation-for="Alias" class="text-danger"></span>
+                    <label for="floatingAlias">Alias</label>
+                </div>
+
+                <!-- Age Field -->
+                <div class="form-floating mb-3">
+                    <input type="number" class="form-control" id="floatingAge" placeholder="Age" asp-for="Age" />
+                    <span asp-validation-for="Age" class="text-danger"></span>
+                    <label for="floatingAge">Age</label>
+                </div>
+
+                <!-- Gender Field -->
+                <div class="form-floating mb-3">
+                    <select class="form-control" id="floatingGender" asp-for="Gender">
+                        <option value="">Select Gender</option>
+                        <option value="Male" selected="@Model.Gender == " Male"">Male</option>
+                        <option value="Female" selected="@Model.Gender == " Female"">Female</option>
+                        <option value="Other" selected="@Model.Gender == " Other"">Other</option>
+                    </select>
+                    <span asp-validation-for="Gender" class="text-danger"></span>
+                    <label for="floatingGender">Gender</label>
+                </div>
+
+                <!-- Description Field -->
+                <div class="form-floating mb-3">
+                    <textarea class="form-control" id="floatingDescription" placeholder="Description" asp-for="Description">@Model.Description</textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                    <label for="floatingDescription">Description</label>
+                </div>
+
+                <!-- Image Upload Field -->
+                <div class="mb-3">
+                    <label for="ImageFile" class="form-label">Upload Image</label>
+                    <input type="file" class="form-control" id="ImageFile" asp-for="ImageFile" />
+                    <span asp-validation-for="ImageFile" class="text-danger"></span>
+                </div>
+
+                <!-- Gang Affiliation Field -->
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="floatingGangAffiliation" placeholder="Gang Affiliation" asp-for="GangAffiliation" />
+                    <span asp-validation-for="GangAffiliation" class="text-danger"></span>
+                    <label for="floatingGangAffiliation">Gang Affiliation</label>
+                </div>
+
+                <!-- Accomplices Field -->
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="floatingAccomplices" placeholder="Accomplices" asp-for="Accomplices" />
+                    <span asp-validation-for="Accomplices" class="text-danger"></span>
+                    <label for="floatingAccomplices">Accomplices</label>
+                </div>
+
+                <!-- Weapon Used Field -->
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="floatingWeaponUsed" placeholder="Weapon Used" asp-for="WeaponUsed" />
+                    <span asp-validation-for="WeaponUsed" class="text-danger"></span>
+                    <label for="floatingWeaponUsed">Weapon Used</label>
+                </div>
+
+                <!-- Known Habits Field -->
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="floatingKnownHabits" placeholder="Known Habits" asp-for="KnownHabits" />
+                    <span asp-validation-for="KnownHabits" class="text-danger"></span>
+                    <label for="floatingKnownHabits">Known Habits</label>
+                </div>
+
+                <!-- Psychological Profile Field -->
+                <div class="form-floating mb-3">
+                    <textarea class="form-control" id="floatingPsychologicalProfile" placeholder="Psychological Profile" asp-for="PsychologicalProfile">@Model.PsychologicalProfile</textarea>
+                    <span asp-validation-for="PsychologicalProfile" class="text-danger"></span>
+                    <label for="floatingPsychologicalProfile">Psychological Profile</label>
+                </div>
+
+                <!-- Address Field -->
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="floatingAddress" placeholder="Address" asp-for="Address" />
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                    <label for="floatingAddress">Address</label>
+                </div>
+
+                <!-- Caught Field -->
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="floatingCaught" asp-for="Caught" checked="@Model.Caught" />
+                    <label class="form-check-label" for="floatingCaught">Caught</label>
+                    <span asp-validation-for="Caught" class="text-danger"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        </div>
+    </div>
+</form>

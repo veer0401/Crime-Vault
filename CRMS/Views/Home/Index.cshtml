@@ -1,8 +1,38 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard - Analytics";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/toastr/toastr.css" />
+    <link rel="stylesheet" href="~/vendor/libs/apex-charts/apex-charts.css" />
+    <link rel="stylesheet" href="~/vendor/libs/swiper/swiper.css" />
+    <link rel="stylesheet" href="~/vendor/libs/datatables-bs5/datatables.bootstrap5.css">
+    <link rel="stylesheet" href="~/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css">
+    <link rel="stylesheet" href="~/vendor/libs/datatables-checkboxes-jquery/datatables.checkboxes.css">
+}
+
+@section VendorScripts {
+    <script src="~/vendor/libs/toastr/toastr.js"></script>
+
+    <script src="~/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="~/vendor/libs/swiper/swiper.js"></script>
+    <script src="~/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+}
+
+
+@section PageStyles {
+    <!-- Toastr CSS -->
+
+    <link rel="stylesheet" href="~/vendor/css/pages/cards-advance.css" />
+}
+
+@section PageScripts {
+    <script src="~/js/ui-toasts.js"></script>
+
+    <script src="~/js/dashboards-analytics.js"></script>
+}
+
+@* ************** Content ************** *@
+<div class="row g-6">
+    <input type="hidden" id="loginSuccessFlag" value="@TempData["LoginSuccess"]" />    
 </div>

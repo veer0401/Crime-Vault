@@ -1,0 +1,87 @@
+﻿@model List<CRMS.Models.Criminal>
+
+@{
+    ViewData["Title"] = "Criminal Records";
+}
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/datatables-bs5/datatables.bootstrap5.css">
+
+    <link rel="stylesheet" href="~/vendor/libs/animate-css/animate.css" />
+    <link rel="stylesheet" href="~/vendor/libs/sweetalert2/sweetalert2.css" />
+    <link rel="stylesheet" href="~/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css">
+    <link rel="stylesheet" href="~/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css">
+}
+
+@section VendorScripts {
+    <script src="~/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/dataTables.buttons.min.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.min.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/jszip.min.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/pdfmake.min.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/vfs_fonts.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/buttons.html5.min.js"></script>
+    <script src="~/vendor/libs/datatables-buttons-bs5/buttons.print.min.js"></script>
+}
+
+@section PageScripts {
+    <script src="~/js/app-criminal-list.js"></script>
+    <!-- Include SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+    <!-- Include SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+}
+
+<div class="row" id="criminal-stats"></div>
+
+
+<div class="card">
+
+    <div class="card-header border-bottom">
+        <h2 class="card-title mb-10">List of Criminals</h2>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table class="datatables-users table">
+            <thead class="border-top">
+                <tr>
+                    <th></th>
+                    <th>Criminal Name</th>
+                    <th>Alias</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Crime Description</th>
+                   
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be loaded dynamically via DataTables -->
+            </tbody>
+        </table>
+    </div>
+    </div>
+
+<!-- Modal -->
+    <div class="modal fade" id="criminalModal" tabindex="-1" aria-labelledby="criminalModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="criminalModalLabel">Criminal Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Name:</strong> <span id="modalName"></span></p>
+                    <p><strong>Alias:</strong> <span id="modalAlias"></span></p>
+                    <p><strong>Age:</strong> <span id="modalAge"></span></p>
+                    <p><strong>Gender:</strong> <span id="modalGender"></span></p>
+                    <p><strong>Crime Description:</strong> <span id="modalDescription"></span></p>
+                <p><span id="modalCaughtStatus"></span></p>
+
+                <p><strong>Photo:</strong></p>
+                    <img id="modalImage" src="" alt="Criminal Image" class="img-fluid">
+                </div>
+                
+            </div>
+        </div>
+    </div>
+

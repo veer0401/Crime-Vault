@@ -1,9 +1,12 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using CRMS.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace CRMS.Controllers
 {
+    [Authorize]  // 🔒 This ensures only authenticated users can access this controller
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

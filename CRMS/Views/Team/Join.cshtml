@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Join Team";
+}
+
+<h2>Join a Team</h2>
+
+<form id="joinTeamForm">
+    <label for="teamCode">Enter Team Code:</label>
+    <input type="text" id="teamCode" name="teamCode" required>
+    <button type="submit">Join</button>
+</form>
+
+<div id="resultMessage"></div>
+
+<script>
+    document.getElementById("joinTeamForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        var teamCode = document.getElementById("teamCode").value;
+
+        fetch("/api/TeamApi/join", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(teamCode)
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("resultMessage").innerText = data.message;
+        })
+        .catch(error => console.error("Error:", error));
+    });
+</script>
