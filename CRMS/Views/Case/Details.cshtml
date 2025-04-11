@@ -1,44 +1,112 @@
 @model CRMS.Models.Case
 
-@{
-    ViewData["Title"] = "Case Details";
-    var caseId = Model.Id; // Ensure the case ID is available
-}
+<div class="row">
+    <div class="col">
+        <h6 class="mt-6">Case Details</h6>
+        <div class="card mb-6">
+            <div class="card-header px-0 pt-0">
+                <div class="nav-align-top">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li class="nav-item">
+                            <button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#case-tabs-general" aria-controls="case-tabs-general" role="tab" aria-selected="true">
+                                <span class="ti ti-info ti-lg d-sm-none"></span>
+                                <span class="d-none d-sm-block">General Info</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#case-tabs-criminals" aria-controls="case-tabs-criminals" role="tab" aria-selected="false">
+                                <span class="ti ti-user ti-lg d-sm-none"></span>
+                                <span class="d-none d-sm-block">Criminals</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#case-tabs-evidence" aria-controls="case-tabs-evidence" role="tab" aria-selected="false">
+                                <span class="ti ti-folder ti-lg d-sm-none"></span>
+                                <span class="d-none d-sm-block">Evidence</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#case-tabs-witnesses" aria-controls="case-tabs-witnesses" role="tab" aria-selected="false">
+                                <span class="ti ti-eye ti-lg d-sm-none"></span>
+                                <span class="d-none d-sm-block">Witnesses</span>
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#case-tabs-victims" aria-controls="case-tabs-victims" role="tab" aria-selected="false">
+                                <span class="ti ti-heart ti-lg d-sm-none"></span>
+                                <span class="d-none d-sm-block">Victims</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
 
-<h2>@Model.Title</h2>
-
-<div>
-    <h4>Case Details</h4>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">
-            Description
-        </dt>
-        <dd class="col-sm-10">
-            @Model.Description
-        </dd>
-        <dt class="col-sm-2">
-            Status
-        </dt>
-        <dd class="col-sm-10">
-            @Model.Status
-        </dd>
-        <dt class="col-sm-2">
-            Priority
-        </dt>
-        <dd class="col-sm-10">
-            @Model.Priority
-        </dd>
-        <dt class="col-sm-2">
-            Location
-        </dt>
-        <dd class="col-sm-10">
-            @Model.Location
-        </dd>
-    </dl>
-</div>
-
-<div>
-    <a asp-action="Edit" asp-route-id="@caseId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+            <div class="card-body">
+                <div class="tab-content p-0">
+                    <div class="tab-pane fade active show" id="case-tabs-general" role="tabpanel">
+                        <div class="row g-6">
+                            <div class="col-md-6">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-control" value="@Model.Title" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" readonly>@Model.Description</textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <input type="text" class="form-control" value="@Model.Status" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Priority</label>
+                                <input type="text" class="form-control" value="@Model.Priority" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Location</label>
+                                <input type="text" class="form-control" value="@Model.Location" readonly />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="case-tabs-criminals" role="tabpanel">
+                        <ul>
+                            @foreach (var criminal in Model.CaseCriminals)
+                            {
+                                <li>@criminal.Criminal.Name - @criminal.Role</li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="tab-pane fade" id="case-tabs-evidence" role="tabpanel">
+                        <ul>
+                            @foreach (var evidence in Model.Evidences)
+                            {
+                                <li>
+                                    @evidence.Title - @evidence.Description
+                                    @if (!string.IsNullOrEmpty(evidence.FilePath))
+                                    {
+                                        <a href="@evidence.FilePath" target="_blank">View File</a>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="tab-pane fade" id="case-tabs-witnesses" role="tabpanel">
+                        <ul>
+                            @foreach (var witness in Model.Witnesses)
+                            {
+                                <li>@witness.Name - @witness.Statement</li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="tab-pane fade" id="case-tabs-victims" role="tabpanel">
+                        <ul>
+                            @foreach (var victim in Model.Victims)
+                            {
+                                <li>@victim.Name - @victim.Description</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

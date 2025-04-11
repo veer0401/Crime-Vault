@@ -157,7 +157,7 @@ namespace CRMS.Controllers
         // POST: Case/UpdateEvidence
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateEvidence(Guid id, List<Evidence> evidences)
+        public async Task<IActionResult> UpdateEvidence(Guid id, List<Evidence> evidences, List<IFormFile> evidenceFiles)
         {
             if (!ModelState.IsValid)
             {
@@ -177,11 +177,26 @@ namespace CRMS.Controllers
             _context.Evidence.RemoveRange(@case.Evidences);
 
             // Add updated evidence
-            foreach (var evidence in evidences)
+            for (int i = 0; i < evidences.Count; i++)
             {
+                var evidence = evidences[i];
                 evidence.CaseId = id;
                 evidence.CollectionDate = DateTime.UtcNow;
-                @case.Evidences.Add(evidence);
+
+                // Handle file upload and set FilePath
+                if (evidenceFiles != null && evidenceFiles.Count > i)
+                {
+                    var file = evidenceFiles[i];
+                    if (file != null && file.Length > 0)
+                    {
+                        var filePath = Path.Combine("uploads", file.FileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                        evidence.FilePath = filePath;
+                    }
+                }
             }
 
             try
