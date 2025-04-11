@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations.Schema;
+using CRMS.Services;
 
 namespace CRMS.Controllers
 {
@@ -462,6 +463,44 @@ namespace CRMS.Controllers
                 }
 
                 _context.Add(@case);
+                // Add automatic bounty for criminals if case has victims
+                if (model.Victims?.Any() == true)
+                {
+                    var criminals = model.Criminals ?? new List<CRMS.Models.CreateModel.CriminalInfo>();
+                    foreach (var criminalInfo in criminals)
+                    {
+                        var severity = model.Victims.Max(v => v.InjurySeverity) switch
+                        {
+                            "Fatal" => "Fatal",
+                            "Severe" => "Severe",
+                            _ => "Minor"
+                        };
+
+                        var priority = model.Priority switch
+                        {
+                            "High" => "High",
+                            "Medium" => "Medium",
+                            _ => "Low"
+                        };
+
+                        var bounty = new Bounty
+                        {
+                            CaseId = @case.Id,
+                            CriminalId = criminalInfo.CriminalId,
+                            Severity = severity,
+                            Priority = priority,
+                            CreatedDate = DateTime.UtcNow,
+                            CreatedById = (await _userManager.GetUserAsync(User)).Id
+                        };
+
+                        bounty.BountyPoints = BountyService.CalculateBountyPoints(severity, priority);
+                        _context.Bounties.Add(bounty);
+
+                        // Update criminal's total bounty
+                        await BountyService.UpdateCriminalBounty(_context, criminalInfo.CriminalId);
+                    }
+                }
+
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Case created successfully.";
                 return RedirectToAction(nameof(Index));

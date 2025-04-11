@@ -13,6 +13,7 @@ namespace CRMS.Models.CreateModel
         public string Priority { get; set; }
         public string Location { get; set; }
         public List<Guid> SelectedTeams { get; set; }
+public Criminal Criminal { get; set; }
 
         // Criminal Information
         public List<CriminalInfo> Criminals { get; set; }

@@ -1,0 +1,30 @@
+@model Bounty
+
+<h2>Bounty Details</h2>
+
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Criminal</dt>
+        <dd class="col-sm-10">@Model.Criminal.Name</dd>
+        
+        <dt class="col-sm-2">Case</dt>
+        <dd class="col-sm-10">@Model.Case.Title</dd>
+        
+        <dt class="col-sm-2">Severity</dt>
+        <dd class="col-sm-10">@Model.Severity</dd>
+        
+        <dt class="col-sm-2">Priority</dt>
+        <dd class="col-sm-10">@Model.Priority</dd>
+        
+        <dt class="col-sm-2">Bounty Points</dt>
+        <dd class="col-sm-10">@Model.BountyPoints</dd>
+        
+        <dt class="col-sm-2">Assigned By</dt>
+        <dd class="col-sm-10">@Model.CreatedBy.UserName</dd>
+        
+        <dt class="col-sm-2">Date Assigned</dt>
+        <dd class="col-sm-10">@Model.CreatedDate.ToString("g")</dd>
+    </dl>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

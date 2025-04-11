@@ -1,0 +1,33 @@
+@model IEnumerable<Bounty>
+
+<h2>Bounties List</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Criminal</th>
+            <th>Case</th>
+            <th>Severity</th>
+            <th>Priority</th>
+            <th>Bounty Points</th>
+            <th>Assigned By</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var bounty in Model)
+        {
+            <tr>
+                <td>@bounty.Criminal.Name</td>
+                <td>@bounty.Case.Title</td>
+                <td>@bounty.Severity</td>
+                <td>@bounty.Priority</td>
+                <td>@bounty.BountyPoints</td>
+                <td>@bounty.CreatedBy.UserName</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@bounty.Id" class="btn btn-info">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

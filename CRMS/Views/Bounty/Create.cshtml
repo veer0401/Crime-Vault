@@ -1,0 +1,35 @@
+@model Bounty
+
+<form asp-action="Create">
+    <div class="form-group">
+        <label asp-for="CriminalId" class="control-label"></label>
+        <select asp-for="CriminalId" asp-items="ViewBag.Criminals" class="form-control">
+            <option value="">-- Select Criminal --</option>
+        </select>
+        <span asp-validation-for="CriminalId" class="text-danger"></span>
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Severity" class="control-label"></label>
+        <select asp-for="Severity" class="form-control">
+            <option value="">-- Select Severity --</option>
+            <option value="Fatal">Fatal</option>
+            <option value="Severe">Severe</option>
+            <option value="Minor">Minor</option>
+        </select>
+        <span asp-validation-for="Severity" class="text-danger"></span>
+    </div>
+    
+    <div class="form-group">
+        <label asp-for="Priority" class="control-label"></label>
+        <select asp-for="Priority" class="form-control">
+            <option value="">-- Select Priority --</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+        </select>
+        <span asp-validation-for="Priority" class="text-danger"></span>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

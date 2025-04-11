@@ -21,6 +21,7 @@ namespace CRMS.Data
         public DbSet<Witness> Witnesses { get; set; }
         public DbSet<CaseCriminal> CaseCriminals { get; set; }
         public DbSet<CaseTeam> CaseTeams { get; set; }
+        public DbSet<Bounty> Bounties { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

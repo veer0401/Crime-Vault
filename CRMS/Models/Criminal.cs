@@ -28,6 +28,7 @@ namespace CRMS.Models
 
         public bool Caught { get; set; }
 
+        public int TotalBounty { get; set; }
     }
 
   
