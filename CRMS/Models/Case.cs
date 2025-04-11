@@ -24,5 +24,6 @@ namespace CRMS.Models
         public ICollection<Victim> Victims { get; set; } = new List<Victim>();
         public ICollection<CaseCriminal> CaseCriminals { get; set; } = new List<CaseCriminal>();
         public ICollection<CaseTeam> CaseTeams { get; set; } = new List<CaseTeam>();
+        public ICollection<Suspect> Suspects { get; set; } = new List<Suspect>();
     }
 }

@@ -1,230 +1,44 @@
 @model CRMS.Models.Case
+
 @{
     ViewData["Title"] = "Case Details";
-    Layout = "_ContentNavbarLayout";
+    var caseId = Model.Id; // Ensure the case ID is available
 }
 
-<div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="py-3 mb-4">
-        <span class="text-muted fw-light">Case /</span> Details
-    </h4>
+<h2>@Model.Title</h2>
 
-    <div class="row">
-        <div class="col-xl-12">
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Case Information</h5>
-                    <div>
-                        <a asp-action="Edit" asp-route-id="@Model.CaseId" class="btn btn-primary me-2">
-                            <i class="bx bx-edit-alt me-1"></i> Edit
-                        </a>
-                        <a asp-action="Index" class="btn btn-outline-secondary">
-                            <i class="bx bx-arrow-back me-1"></i> Back to List
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h6 class="fw-semibold">Title</h6>
-                            <p class="text-muted">@Model.Title</p>
-                        </div>
-                        <div class="col-md-3">
-                            <h6 class="fw-semibold">Status</h6>
-                            <span class="badge bg-label-@(Model.Status.ToLower() == "open" ? "success" : Model.Status.ToLower() == "closed" ? "danger" : "warning")">@Model.Status</span>
-                        </div>
-                        <div class="col-md-3">
-                            <h6 class="fw-semibold">Priority</h6>
-                            <span class="badge bg-label-@(Model.Priority.ToLower() == "high" ? "danger" : Model.Priority.ToLower() == "medium" ? "warning" : "info")">@Model.Priority</span>
-                        </div>
-                    </div>
+<div>
+    <h4>Case Details</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            Description
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Description
+        </dd>
+        <dt class="col-sm-2">
+            Status
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Status
+        </dd>
+        <dt class="col-sm-2">
+            Priority
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Priority
+        </dd>
+        <dt class="col-sm-2">
+            Location
+        </dt>
+        <dd class="col-sm-10">
+            @Model.Location
+        </dd>
+    </dl>
+</div>
 
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <h6 class="fw-semibold">Description</h6>
-                            <p class="text-muted">@Model.Description</p>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h6 class="fw-semibold">Location</h6>
-                            <p class="text-muted">@Model.Location</p>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="fw-semibold">Created Date</h6>
-                            <p class="text-muted">@Model.CreatedDate.ToString("MMM dd, yyyy")</p>
-                        </div>
-                    </div>
-
-                    <!-- Assigned Teams -->
-                    <div class="divider">
-                        <div class="divider-text">Assigned Teams</div>
-                    </div>
-                    @if (Model.CaseTeams != null && Model.CaseTeams.Any())
-                    {
-                        <div class="table-responsive text-nowrap mb-3">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Team Name</th>
-                                        <th>Leader</th>
-                                        <th>Members</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var caseTeam in Model.CaseTeams)
-                                    {
-                                        <tr>
-                                            <td>@caseTeam.Team.Name</td>
-                                            <td>@caseTeam.Team.Leader.UserName</td>
-                                            <td>@caseTeam.Team.TeamMembers.Count</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <p class="text-muted">No teams assigned to this case.</p>
-                    }
-
-                    <!-- Criminals -->
-                    <div class="divider">
-                        <div class="divider-text">Criminals</div>
-                    </div>
-                    @if (Model.CaseCriminals != null && Model.CaseCriminals.Any())
-                    {
-                        <div class="table-responsive text-nowrap mb-3">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Status</th>
-                                        <th>Last Known Location</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var caseCriminal in Model.CaseCriminals)
-                                    {
-                                        <tr>
-                                            <td>@caseCriminal.Criminal.Name</td>
-                                            <td>@caseCriminal.Criminal.Status</td>
-                                            <td>@caseCriminal.Criminal.LastKnownLocation</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <p class="text-muted">No criminals associated with this case.</p>
-                    }
-
-                    <!-- Evidence -->
-                    <div class="divider">
-                        <div class="divider-text">Evidence</div>
-                    </div>
-                    @if (Model.Evidences != null && Model.Evidences.Any())
-                    {
-                        <div class="table-responsive text-nowrap mb-3">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Description</th>
-                                        <th>Type</th>
-                                        <th>Location</th>
-                                        <th>Collection Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var evidence in Model.Evidences)
-                                    {
-                                        <tr>
-                                            <td>@evidence.Description</td>
-                                            <td>@evidence.Type</td>
-                                            <td>@evidence.Location</td>
-                                            <td>@evidence.CollectionDate.ToString("MMM dd, yyyy")</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <p class="text-muted">No evidence recorded for this case.</p>
-                    }
-
-                    <!-- Witnesses and Victims -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="divider">
-                                <div class="divider-text">Witnesses</div>
-                            </div>
-                            @if (Model.Witnesses != null && Model.Witnesses.Any())
-                            {
-                                <div class="table-responsive text-nowrap mb-3">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Contact</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var witness in Model.Witnesses)
-                                            {
-                                                <tr>
-                                                    <td>@witness.Name</td>
-                                                    <td>@witness.ContactInfo</td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="text-muted">No witnesses recorded for this case.</p>
-                            }
-                        </div>
-                        <div class="col-md-6">
-                            <div class="divider">
-                                <div class="divider-text">Victims</div>
-                            </div>
-                            @if (Model.Victims != null && Model.Victims.Any())
-                            {
-                                <div class="table-responsive text-nowrap mb-3">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>Name</th>
-                                                <th>Contact</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach (var victim in Model.Victims)
-                                            {
-                                                <tr>
-                                                    <td>@victim.Name</td>
-                                                    <td>@victim.ContactInfo</td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-                            }
-                            else
-                            {
-                                <p class="text-muted">No victims recorded for this case.</p>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div>
+    <a asp-action="Edit" asp-route-id="@caseId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
 </div>
