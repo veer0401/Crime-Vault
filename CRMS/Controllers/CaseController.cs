@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
+using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CRMS.Controllers
 {
@@ -183,22 +186,43 @@ namespace CRMS.Controllers
                 evidence.CaseId = id;
                 evidence.CollectionDate = DateTime.UtcNow;
 
-                // Handle file upload and set FilePath
-                if (evidenceFiles != null && evidenceFiles.Count > i)
+                // Handle file upload
+                if (evidenceFiles != null && i < evidenceFiles.Count && evidenceFiles[i] != null)
                 {
                     var file = evidenceFiles[i];
-                    if (file != null && file.Length > 0)
+                    if (file.Length > 10 * 1024 * 1024) // 10MB limit
                     {
-                        var filePath = Path.Combine("uploads", file.FileName);
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
-                        evidence.FilePath = filePath;
+                        ModelState.AddModelError("", "File size must not exceed 10MB");
+                        return PartialView("_EvidencePartial", evidences);
                     }
-                }
-            }
 
+                    var allowedTypes = new[] { ".pdf", ".jpg", ".jpeg", ".png" };
+                    var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                    if (!allowedTypes.Contains(extension))
+                    {
+                        ModelState.AddModelError("", "Only PDF, JPG, and PNG files are allowed");
+                        return PartialView("_EvidencePartial", evidences);
+                    }
+
+                    // Create unique filename
+                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "evidence");
+                    Directory.CreateDirectory(uploadsFolder);
+
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    evidence.FilePath = $"/uploads/evidence/{uniqueFileName}";
+                    evidence.FileName = file.FileName;
+                    evidence.ContentType = file.ContentType;
+                    evidence.FileSize = file.Length;
+                }
+
+                @case.Evidences.Add(evidence);
+            }
             try
             {
                 await _context.SaveChangesAsync();
@@ -250,7 +274,7 @@ namespace CRMS.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError("", $"An error occurred while updating witness information: {ex.Message}");
-                return PartialView("_WitnessPartial", witnesses);
+                return PartialView("_WitnessPartial", witnesses); // Changed from victims to witnesses
             }
         }
 
@@ -449,12 +473,14 @@ namespace CRMS.Controllers
                 return View(model);
             }
         }
-        private async Task PrepareViewBagForCase()
-        {
-            ViewBag.Teams = await _context.Teams.ToListAsync();
-            ViewBag.Criminals = await _context.Criminal.ToListAsync();
-            ViewBag.SelectedTeams = new List<Guid>();
-        }
+
+
+private async Task PrepareViewBagForCase()
+{
+    ViewBag.Teams = await _context.Teams.ToListAsync();
+    ViewBag.Criminals = await _context.Criminal.ToListAsync();
+    ViewBag.SelectedTeams = new List<Guid>();
+}
 
 
         // GET: Case/Edit/5

@@ -73,23 +73,11 @@ namespace CRMS.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Configure one-to-many relationships for Case
+            // Add this configuration for Evidence
             modelBuilder.Entity<CRMS.Models.Evidence>()
                 .HasOne(e => e.Case)
                 .WithMany(c => c.Evidences)
-                .HasForeignKey(e => e.CaseId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Witness>()
-                .HasOne(w => w.Case)
-                .WithMany(c => c.Witnesses)
-                .HasForeignKey(w => w.CaseId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Victim>()
-                .HasOne(v => v.Case)
-                .WithMany(c => c.Victims)
-                .HasForeignKey(v => v.CaseId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(e => e.CaseId);
         }
     }
 

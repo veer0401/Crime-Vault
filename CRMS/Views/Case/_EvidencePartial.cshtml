@@ -1,0 +1,118 @@
+@model List<Evidence>
+
+<div class="evidence-section">
+    <h4>Evidence Management</h4>
+    <div class="evidence-list" id="evidenceList">
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            <div class="evidence-item card mb-3">
+                <div class="card-body">
+                    <input type="hidden" asp-for="@Model[i].Id" />
+                    <div class="form-group">
+                        <label asp-for="@Model[i].Title" class="control-label">Title</label>
+                        <input asp-for="@Model[i].Title" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="@Model[i].Description" class="control-label">Description</label>
+                        <textarea asp-for="@Model[i].Description" class="form-control" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="@Model[i].Type" class="control-label">Type</label>
+                        <select asp-for="@Model[i].Type" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option value="Document">Document</option>
+                            <option value="Photo">Photo</option>
+                            <option value="Physical">Physical</option>
+                            <option value="Digital">Digital</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="@Model[i].FileUpload" class="control-label">File</label>
+                        <input type="file" asp-for="@Model[i].FileUpload" class="form-control" 
+                               accept=".pdf,.jpg,.jpeg" />
+                        <small class="text-muted">Accepted formats: PDF, JPG (Max size: 10MB)</small>
+                    </div>
+                    @if (Model[i].HasFile)
+                    {
+                        <div class="mt-2">
+                            <strong>Current File:</strong> @Model[i].FileName
+                            <a href="@Model[i].FilePath" target="_blank" class="btn btn-sm btn-info ml-2">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        </div>
+                    }
+                    <div class="form-group">
+                        <label asp-for="@Model[i].StorageLocation" class="control-label">Storage Location</label>
+                        <input asp-for="@Model[i].StorageLocation" class="form-control" />
+                    </div>
+                    <button type="button" class="btn btn-danger remove-evidence">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+    <button type="button" class="btn btn-success" id="addEvidence">
+        <i class="fas fa-plus"></i> Add Evidence
+    </button>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#addEvidence').click(function () {
+            var evidenceCount = $('.evidence-item').length;
+            var template = `
+                <div class="evidence-item card mb-3">
+                    <div class="card-body">
+                        <input type="hidden" name="Evidences[${evidenceCount}].Id" value="" />
+                        <div class="form-group">
+                            <label class="control-label">Title</label>
+                            <input name="Evidences[${evidenceCount}].Title" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Description</label>
+                            <textarea name="Evidences[${evidenceCount}].Description" class="form-control" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Type</label>
+                            <select name="Evidences[${evidenceCount}].Type" class="form-control" required>
+                                <option value="">Select Type</option>
+                                <option value="Document">Document</option>
+                                <option value="Photo">Photo</option>
+                                <option value="Physical">Physical</option>
+                                <option value="Digital">Digital</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">File</label>
+                            <input type="file" name="evidenceFiles" class="form-control" 
+                                   accept=".pdf,.jpg,.jpeg" />
+                            <small class="text-muted">Accepted formats: PDF, JPG (Max size: 10MB)</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Storage Location</label>
+                            <input name="Evidences[${evidenceCount}].StorageLocation" class="form-control" />
+                        </div>
+                        <button type="button" class="btn btn-danger remove-evidence">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>`;
+            $('#evidenceList').append(template);
+        });
+
+        $(document).on('click', '.remove-evidence', function () {
+            $(this).closest('.evidence-item').remove();
+        });
+    });
+</script>
+
+@foreach (var evidence in Model)
+{
+    <div class="evidence-item">
+        @if (evidence.HasFile)
+        {
+            <a href="@evidence.FilePath" target="_blank">View File</a>
+        }
+    </div>
+}

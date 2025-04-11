@@ -171,42 +171,13 @@
 
                         <!-- Evidence Tab -->
                         <div class="tab-pane fade" id="evidence-info" role="tabpanel">
-                            <form asp-action="UpdateEvidence" method="post">
-                                <input type="hidden" asp-for="Id" />
-                                <div class="evidence-container">
-                                    @{
-                                        var evidencesList = Model.Evidences.ToList();
-                                        for (var i = 0; i < evidencesList.Count; i++)
-                                        {
-                                            var evidence = evidencesList[i];
-                                            <div class="evidence-item mb-3">
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Title</label>
-                                                        <input type="text" name="Evidences[@i].Title" class="form-control" value="@evidence.Title" placeholder="Enter evidence title" />
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Type</label>
-                                                        <input type="text" name="Evidences[@i].Type" class="form-control" value="@evidence.Type" placeholder="Enter evidence type" />
-                                                    </div>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Description</label>
-                                                    <textarea name="Evidences[@i].Description" class="form-control" rows="2" placeholder="Enter evidence description">@evidence.Description</textarea>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Storage Location</label>
-                                                    <input type="text" name="Evidences[@i].StorageLocation" class="form-control" value="@evidence.StorageLocation" placeholder="Enter storage location" />
-                                                </div>
-                                            </div>
-                                        }
-                                    }
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Evidences" class="form-label">Evidence Files</label>
+                                    <input asp-for="Evidences" type="file" class="form-control" multiple />
+                                    <span asp-validation-for="Evidences" class="text-danger"></span>
                                 </div>
-                                <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addEvidenceField()">Add Another Evidence</button>
-                                <div class="text-end mt-4">
-                                    <button type="submit" class="btn btn-primary">Update Evidence</button>
-                                </div>
-                            </form>
+                            </div>
                         </div>
 
                         <!-- Witnesses Tab -->

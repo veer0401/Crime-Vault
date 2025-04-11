@@ -59,6 +59,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// Add this if not already present
 app.UseStaticFiles();
 
 app.UseRouting();
