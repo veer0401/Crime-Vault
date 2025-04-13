@@ -13,6 +13,7 @@ namespace CRMS.Data
 
         // ✅ DbSet should be inside the class, not outside
         public DbSet<Criminal> Criminal { get; set; }
+        public DbSet<Suspect> Suspect { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<TeamMember> TeamMembers { get; set; }
         public DbSet<Case> Cases { get; set; }
@@ -85,7 +86,7 @@ namespace CRMS.Data
 }
 
 //public DbSet<Evidences> Evidence { get; set; }
-//public DbSet<Suspect> Suspects { get; set; }
+// public DbSet<Suspect> Suspect { get; set; }
 //public DbSet<Team> Teams { get; set; }
 //public DbSet<Message> Messages { get; set; }
 

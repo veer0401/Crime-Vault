@@ -1,703 +1,222 @@
-﻿using CRMS.Data;
+﻿using Microsoft.AspNetCore.Mvc;
+using CRMS.Data;
 using CRMS.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using System.IO;
 using Microsoft.AspNetCore.Http;
-using System.ComponentModel.DataAnnotations.Schema;
-using CRMS.Services;
+using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
+using CRMS.Models.CreateModel;
 
-namespace CRMS.Controllers
+public class CaseController : Controller
 {
-    [Authorize]
-    public class CaseController : Controller
+    private readonly AppDbContext _context;
+
+    public CaseController(AppDbContext context)
     {
-        private readonly AppDbContext _context;
-        private readonly UserManager<Users> _userManager;
+        _context = context;
+    }
 
-        public CaseController(AppDbContext context, UserManager<Users> userManager)
+    public IActionResult Create()
+    {
+        try
         {
-            _context = context;
-            _userManager = userManager;
-        }
+            // Ensure Teams are loaded
+            var teams = _context.Teams.ToList();
+            ViewBag.Teams = teams ?? new List<Team>();
 
-        // GET: Case
-        public async Task<IActionResult> Index()
-        {
-            var cases = await _context.Cases
-                .Include(c => c.CaseTeams)
-                .ThenInclude(ct => ct.Team)
-                .Include(c => c.CaseCriminals)
-                .ThenInclude(cc => cc.Criminal)
-                .Include(c => c.Evidences)
-                .Include(c => c.Victims)
-                .Include(c => c.Witnesses)
-                .ToListAsync();
+            // Load criminals
+            var criminals = _context.Criminal.ToList();
+            ViewBag.Criminals = criminals ?? new List<Criminal>();
 
-            return View(cases);
-        }
-
-        // GET: Case/Details/5
-        public async Task<IActionResult> Details(Guid id)
-        {
-            var @case = await _context.Cases
-                .Include(c => c.CaseTeams)
-                .ThenInclude(ct => ct.Team)
-                .Include(c => c.CaseCriminals)
-                .ThenInclude(cc => cc.Criminal)
-                .Include(c => c.Evidences)
-                .Include(c => c.Victims)
-                .Include(c => c.Witnesses)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (@case == null)
+            var model = new CaseCreateViewModel
             {
-                return NotFound();
-            }
-
-            return View(@case);
-        }
-
-        // GET: Case/Create
-        public async Task<IActionResult> Create()
-        {
-            await PrepareViewBagForCase();
-            return View(new Models.CreateModel.CaseCreateViewModel());
-        }
-
-
-
-        // POST: Case/UpdateCaseDetails
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateCaseDetails(Case model)
-        {
-            if (!ModelState.IsValid)
-            {
-                await PrepareViewBagForCase();
-                return PartialView("_CaseDetailsPartial", model);
-            }
-
-            var existingCase = await _context.Cases.FindAsync(model.Id);
-            if (existingCase == null)
-            {
-                return NotFound();
-            }
-
-            existingCase.Title = model.Title;
-            existingCase.Description = model.Description;
-            existingCase.Status = model.Status;
-            existingCase.Priority = model.Priority;
-            existingCase.Location = model.Location;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Edit), new { id = model.Id });
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CaseExists(model.Id))
-                {
-                    return NotFound();
-                }
-                throw;
-            }
-        }
-
-        // POST: Case/UpdateCriminalInfo
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateCriminalInfo(Guid id, List<CriminalInfo> criminals)
-        {
-            if (!ModelState.IsValid)
-            {
-                return PartialView("_CriminalInfoPartial", criminals);
-            }
-
-            var @case = await _context.Cases
-                .Include(c => c.CaseCriminals)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (@case == null)
-            {
-                return NotFound();
-            }
-
-            // Remove existing criminals
-            _context.CaseCriminals.RemoveRange(@case.CaseCriminals);
-
-            // Add updated criminals
-            foreach (var criminalInfo in criminals)
-            {
-                @case.CaseCriminals.Add(new CaseCriminal
-                {
-                    CaseId = id,
-                    CriminalId = criminalInfo.CriminalId,
-                    Role = criminalInfo.Role,
-                    Notes = criminalInfo.Notes,
-                    AddedDate = DateTime.UtcNow
-                });
-            }
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Criminal information updated successfully.";
-                return RedirectToAction(nameof(Edit), new { id = id });
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"An error occurred while updating criminal information: {ex.Message}");
-                return PartialView("_CriminalInfoPartial", criminals);
-            }
-        }
-
-        // POST: Case/UpdateEvidence
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateEvidence(Guid id, List<Evidence> evidences, List<IFormFile> evidenceFiles)
-        {
-            if (!ModelState.IsValid)
-            {
-                return PartialView("_EvidencePartial", evidences);
-            }
-
-            var @case = await _context.Cases
-                .Include(c => c.Evidences)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (@case == null)
-            {
-                return NotFound();
-            }
-
-            // Remove existing evidence
-            _context.Evidence.RemoveRange(@case.Evidences);
-
-            // Add updated evidence
-            for (int i = 0; i < evidences.Count; i++)
-            {
-                var evidence = evidences[i];
-                evidence.CaseId = id;
-                evidence.CollectionDate = DateTime.UtcNow;
-
-                // Handle file upload
-                if (evidenceFiles != null && i < evidenceFiles.Count && evidenceFiles[i] != null)
-                {
-                    var file = evidenceFiles[i];
-                    if (file.Length > 10 * 1024 * 1024) // 10MB limit
-                    {
-                        ModelState.AddModelError("", "File size must not exceed 10MB");
-                        return PartialView("_EvidencePartial", evidences);
-                    }
-
-                    var allowedTypes = new[] { ".pdf", ".jpg", ".jpeg", ".png" };
-                    var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                    if (!allowedTypes.Contains(extension))
-                    {
-                        ModelState.AddModelError("", "Only PDF, JPG, and PNG files are allowed");
-                        return PartialView("_EvidencePartial", evidences);
-                    }
-
-                    // Create unique filename
-                    var uniqueFileName = $"{Guid.NewGuid()}{extension}";
-                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "evidence");
-                    Directory.CreateDirectory(uploadsFolder);
-
-                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-
-                    evidence.FilePath = $"/uploads/evidence/{uniqueFileName}";
-                    evidence.FileName = file.FileName;
-                    evidence.ContentType = file.ContentType;
-                    evidence.FileSize = file.Length;
-                }
-
-                @case.Evidences.Add(evidence);
-            }
-            try
-            {
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Evidence information updated successfully.";
-                return RedirectToAction(nameof(Edit), new { id = id });
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"An error occurred while updating evidence information: {ex.Message}");
-                return PartialView("_EvidencePartial", evidences);
-            }
-        }
-
-        // POST: Case/UpdateWitness
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateWitness(Guid id, List<Witness> witnesses)
-        {
-            if (!ModelState.IsValid)
-            {
-                return PartialView("_WitnessPartial", witnesses);
-            }
-
-            var @case = await _context.Cases
-                .Include(c => c.Witnesses)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (@case == null)
-            {
-                return NotFound();
-            }
-
-            // Remove existing witnesses
-            _context.Witnesses.RemoveRange(@case.Witnesses);
-
-            // Add updated witnesses
-            foreach (var witness in witnesses)
-            {
-                witness.CaseId = id;
-                @case.Witnesses.Add(witness);
-            }
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Witness information updated successfully.";
-                return RedirectToAction(nameof(Edit), new { id = id });
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"An error occurred while updating witness information: {ex.Message}");
-                return PartialView("_WitnessPartial", witnesses); // Changed from victims to witnesses
-            }
-        }
-
-        // POST: Case/UpdateVictim
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateVictim(Guid id, List<Victim> victims)
-        {
-            if (!ModelState.IsValid)
-            {
-                return PartialView("_VictimPartial", victims);
-            }
-
-            var @case = await _context.Cases
-                .Include(c => c.Victims)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (@case == null)
-            {
-                return NotFound();
-            }
-
-            // Remove existing victims
-            _context.Victims.RemoveRange(@case.Victims);
-
-            // Add updated victims
-            foreach (var victim in victims)
-            {
-                victim.CaseId = id;
-                @case.Victims.Add(victim);
-            }
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Victim information updated successfully.";
-                return RedirectToAction(nameof(Edit), new { id = id });
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"An error occurred while updating victim information: {ex.Message}");
-                return PartialView("_VictimPartial", victims);
-            }
-        }
-
-
-
-        // POST: Case/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Models.CreateModel.CaseCreateViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                await PrepareViewBagForCase();
-                return View(model);
-            }
-
-            var @case = new Case
-            {
-                Title = model.Title,
-                Description = model.Description,
+                Title = string.Empty,
+                Description = string.Empty,
                 Status = "Open",
-                Priority = model.Priority ?? "Medium",
-                Location = model.Location,
-                OpenDate = DateTime.UtcNow,
-                CaseTeams = new List<CaseTeam>(),
-                CaseCriminals = new List<CaseCriminal>(),
-                Evidences = new List<Evidence>(),
+                Priority = "Medium",
+                Location = string.Empty,
+                SelectedTeams = new List<int>(),
+                Criminals = criminals ?? new List<Criminal>(),
+                Evidences = new List<EvidenceViewModel>(),
                 Witnesses = new List<Witness>(),
                 Victims = new List<Victim>(),
                 Suspects = new List<Suspect>()
             };
 
-            try
+            // Initialize the collections to prevent null reference exceptions
+            if (model.Evidences == null) model.Evidences = new List<EvidenceViewModel>();
+            if (model.Witnesses == null) model.Witnesses = new List<Witness>();
+            if (model.Victims == null) model.Victims = new List<Victim>();
+            if (model.Suspects == null) model.Suspects = new List<Suspect>();
+
+            return View(model);
+        }
+        catch (Exception ex)
+        {
+            // Log the error
+            ModelState.AddModelError("", "An error occurred while loading the form. Please try again.");
+            return View(new CaseCreateViewModel
             {
-                // Add Teams
-                if (model.SelectedTeams?.Any() == true)
-                {
-                    foreach (var teamId in model.SelectedTeams)
-                    {
-                        @case.CaseTeams.Add(new CaseTeam
-                        {
-                            TeamId = teamId,
-                            AssignedDate = DateTime.UtcNow
-                        });
-                    }
-                }
+                Title = string.Empty,
+                Description = string.Empty,
+                Status = "Open",
+                Priority = "Medium",
+                Location = string.Empty,
+                SelectedTeams = new List<int>(),
+                Criminals = new List<Criminal>(),
+                Evidences = new List<EvidenceViewModel>(),
+                Witnesses = new List<Witness>(),
+                Victims = new List<Victim>(),
+                Suspects = new List<Suspect>()
+            });
+        }
+    }    // CASE DETAILS
 
-                // Add Criminals
-                if (model.Criminals?.Any() == true)
-                {
-                    foreach (var criminalInfo in model.Criminals)
-                    {
-                        @case.CaseCriminals.Add(new CaseCriminal
-                        {
-                            CriminalId = criminalInfo.CriminalId,
-                            Role = criminalInfo.Role,
-                            Notes = criminalInfo.Notes,
-                            AddedDate = DateTime.UtcNow
-                        });
-                    }
-                }
+    [HttpPost]
+public async Task<IActionResult> CreateCaseDetails(CaseCreateViewModel model, List<string> selectedTeams)
+{
+    if (ModelState.IsValid)
+    {
+        var newCase = new Case
+        {
+            Title = model.Title,
+            Description = model.Description,
+            Status = model.Status,
+            Priority = model.Priority,
+            Location = model.Location,
+            CreatedDate = DateTime.Now,
+            UpdatedDate = DateTime.Now
+        };
 
-                // Add New Criminal if provided
-                if (model.NewCriminal != null && !string.IsNullOrWhiteSpace(model.NewCriminal.Name))
-                {
-                    var newCriminal = new Criminal
-                    {
-                        Name = model.NewCriminal.Name,
-                        Alias = model.NewCriminal.Alias,
-                        Description = model.NewCriminal.Description
-                    };
-                    _context.Criminal.Add(newCriminal);
-                    await _context.SaveChangesAsync();
+        _context.Cases.Add(newCase);
+        await _context.SaveChangesAsync();
 
-                    @case.CaseCriminals.Add(new CaseCriminal
+        // Check if selectedTeams is not null or empty
+        if (selectedTeams != null && selectedTeams.Any())
+        {
+            foreach (var teamIdString in selectedTeams)
+            {
+                // Try parsing the teamIdString (which is a string) into a Guid
+                if (Guid.TryParse(teamIdString, out Guid teamId))
+                {
+                    _context.CaseTeams.Add(new CaseTeam
                     {
-                        CriminalId = newCriminal.Id,
-                        Role = "Suspect",
-                        AddedDate = DateTime.UtcNow
+                        CaseId = newCase.Id,
+                        TeamId = teamId
                     });
                 }
-
-                // Add Suspects
-                if (model.Suspects?.Any() == true)
+                else
                 {
-                    foreach (var suspectInfo in model.Suspects)
-                    {
-                        @case.Suspects.Add(new Suspect
-                        {
-                            Name = suspectInfo.Name,
-                            LastKnownLocation = suspectInfo.LastKnownLocation,
-                            Description = suspectInfo.Description,
-                            PossibleMotives = suspectInfo.PossibleMotives,
-                            RelationshipToVictim = suspectInfo.RelationshipToVictim
-                        });
-                    }
+                    // Handle invalid Guid and add an error to the ModelState
+                    ModelState.AddModelError("selectedTeams", $"Invalid team ID: {teamIdString}");
+                    return View("Create", model);
                 }
-
-                // Add Evidence
-                if (model.Evidences?.Any() == true)
-                {
-                    foreach (var evidenceInfo in model.Evidences)
-                    {
-                        @case.Evidences.Add(new Evidence
-                        {
-                            Title = evidenceInfo.Title,
-                            Description = evidenceInfo.Description,
-                            Type = evidenceInfo.Type,
-                            StorageLocation = evidenceInfo.StorageLocation,
-                            CollectionDate = DateTime.UtcNow
-                        });
-                    }
-                }
-
-                // Add Witnesses
-                if (model.Witnesses?.Any() == true)
-                {
-                    foreach (var witnessInfo in model.Witnesses)
-                    {
-                        @case.Witnesses.Add(new Witness
-                        {
-                            Name = witnessInfo.Name,
-                            ContactNumber = witnessInfo.ContactNumber,
-                            Statement = witnessInfo.Statement,
-                            IsAnonymous = witnessInfo.IsAnonymous
-                        });
-                    }
-                }
-
-                // Add Victims
-                if (model.Victims?.Any() == true)
-                {
-                    foreach (var victimInfo in model.Victims)
-                    {
-                        @case.Victims.Add(new Victim
-                        {
-                            Name = victimInfo.Name,
-                            ContactNumber = victimInfo.ContactNumber,
-                            Description = victimInfo.Description,
-                            InjurySeverity = victimInfo.InjurySeverity
-                        });
-                    }
-                }
-
-                _context.Add(@case);
-                // Add automatic bounty for criminals if case has victims
-                if (model.Victims?.Any() == true)
-                {
-                    var criminals = model.Criminals ?? new List<CRMS.Models.CreateModel.CriminalInfo>();
-                    foreach (var criminalInfo in criminals)
-                    {
-                        var severity = model.Victims.Max(v => v.InjurySeverity) switch
-                        {
-                            "Fatal" => "Fatal",
-                            "Severe" => "Severe",
-                            _ => "Minor"
-                        };
-
-                        var priority = model.Priority switch
-                        {
-                            "High" => "High",
-                            "Medium" => "Medium",
-                            _ => "Low"
-                        };
-
-                        var bounty = new Bounty
-                        {
-                            CaseId = @case.Id,
-                            CriminalId = criminalInfo.CriminalId,
-                            Severity = severity,
-                            Priority = priority,
-                            CreatedDate = DateTime.UtcNow,
-                            CreatedById = (await _userManager.GetUserAsync(User)).Id
-                        };
-
-                        bounty.BountyPoints = BountyService.CalculateBountyPoints(severity, priority);
-                        _context.Bounties.Add(bounty);
-
-                        // Update criminal's total bounty
-                        await BountyService.UpdateCriminalBounty(_context, criminalInfo.CriminalId);
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Case created successfully.";
-                return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", $"An error occurred while creating the case: {ex.Message}");
-                await PrepareViewBagForCase();
-                return View(model);
-            }
+            await _context.SaveChangesAsync();
         }
 
+        TempData["CaseId"] = newCase.Id;
+        return RedirectToAction("Create"); // or show a success message
+    }
 
-private async Task PrepareViewBagForCase()
-{
-    ViewBag.Teams = await _context.Teams.ToListAsync();
-    ViewBag.Criminals = await _context.Criminal.ToListAsync();
-    ViewBag.SelectedTeams = new List<Guid>();
+    return View("Create", model);
 }
 
-
-        // GET: Case/Edit/5
-        public async Task<IActionResult> Edit(Guid id)
+    // CRIMINAL INFO
+    [HttpPost]
+    public async Task<IActionResult> CreateCriminalInfo(List<Guid> selectedCriminals, List<Criminal> criminals, Guid caseId)
+    {
+        // Add selected existing criminals to the case
+        if (selectedCriminals != null && selectedCriminals.Any())
         {
-            var @case = await _context.Cases
-                .Include(c => c.CaseTeams)
-                .Include(c => c.CaseCriminals)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (@case == null)
+            foreach (var criminalId in selectedCriminals)
             {
-                return NotFound();
+                var caseCriminal = new CaseCriminal
+                {
+                    CaseId = caseId,
+                    CriminalId = criminalId
+                };
+                _context.CaseCriminals.Add(caseCriminal);
             }
-
-            ViewBag.Teams = await _context.Teams.ToListAsync();
-            ViewBag.Criminals = await _context.Criminal.ToListAsync();
-            ViewBag.SelectedTeams = @case.CaseTeams.Select(ct => ct.TeamId).ToList();
-            ViewBag.SelectedCriminals = @case.CaseCriminals.Select(cc => cc.CriminalId).ToList();
-
-            return View(@case);
         }
 
-        // POST: Case/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, Case @case, Guid[] selectedTeams, Guid[] selectedCriminals)
+        // Add new criminals to the database and link them to the case
+        if (criminals != null && criminals.Any())
         {
-            if (@case == null)
+            foreach (var criminal in criminals)
             {
-                return BadRequest("Case data is required.");
-            }
-
-            if (id != @case.Id)
-            {
-                return NotFound();
-            }
-
-            if (string.IsNullOrWhiteSpace(@case.Title))
-            {
-                ModelState.AddModelError(nameof(@case.Title), "Title is required.");
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    var existingCase = await _context.Cases
-                        .Include(c => c.CaseTeams)
-                        .Include(c => c.CaseCriminals)
-                        .FirstOrDefaultAsync(c => c.Id == id);
-
-                    if (existingCase == null)
-                    {
-                        return NotFound();
-                    }
-
-                    // Update case properties
-                    existingCase.Title = @case.Title;
-                    existingCase.Description = @case.Description;
-                    existingCase.Status = @case.Status;
-                    existingCase.Priority = @case.Priority ?? "Medium";
-                    existingCase.Location = @case.Location;
-
-                    // Update teams
-                    _context.CaseTeams.RemoveRange(existingCase.CaseTeams);
-                    if (selectedTeams != null && selectedTeams.Length > 0)
-                    {
-                        var existingTeams = await _context.Teams
-                            .Where(t => selectedTeams.Contains(t.Id))
-                            .ToDictionaryAsync(t => t.Id);
-
-                        var invalidTeams = selectedTeams.Where(id => !existingTeams.ContainsKey(id)).ToList();
-                        if (invalidTeams.Any())
-                        {
-                            ModelState.AddModelError("", $"Invalid team selections: {string.Join(", ", invalidTeams)}");
-                            await PrepareViewBagForCase();
-                            return View(@case);
-                        }
-
-                        foreach (var teamId in selectedTeams)
-                        {
-                            _context.CaseTeams.Add(new CaseTeam
-                            {
-                                CaseId = @case.Id,
-                                TeamId = teamId,
-                                AssignedDate = DateTime.UtcNow
-                            });
-                        }
-                    }
-
-                    // Update criminals
-                    _context.CaseCriminals.RemoveRange(existingCase.CaseCriminals);
-                    if (selectedCriminals != null && selectedCriminals.Length > 0)
-                    {
-                        var existingCriminals = await _context.Criminal
-                            .Where(c => selectedCriminals.Contains(c.Id))
-                            .ToDictionaryAsync(c => c.Id);
-
-                        var invalidCriminals = selectedCriminals.Where(id => !existingCriminals.ContainsKey(id)).ToList();
-                        if (invalidCriminals.Any())
-                        {
-                            ModelState.AddModelError("", $"Invalid criminal selections: {string.Join(", ", invalidCriminals)}");
-                            await PrepareViewBagForCase();
-                            return View(@case);
-                        }
-
-                        foreach (var criminalId in selectedCriminals)
-                        {
-                            _context.CaseCriminals.Add(new CaseCriminal
-                            {
-                                CaseId = @case.Id,
-                                CriminalId = criminalId,
-                                AddedDate = DateTime.UtcNow
-                            });
-                        }
-                    }
-
-                    await _context.SaveChangesAsync();
-                    TempData["Success"] = "Case updated successfully.";
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CaseExists(id))
-                    {
-                        return NotFound();
-                    }
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", $"An error occurred while updating the case: {ex.Message}");
-                }
-            }
-
-            await PrepareViewBagForCase();
-            ViewBag.SelectedTeams = selectedTeams;
-            ViewBag.SelectedCriminals = selectedCriminals;
-            return View(@case);
-        }
-
-        // GET: Case/Delete/5
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            var @case = await _context.Cases
-                .Include(c => c.CaseTeams)
-                .ThenInclude(ct => ct.Team)
-                .Include(c => c.CaseCriminals)
-                .ThenInclude(cc => cc.Criminal)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (@case == null)
-            {
-                return NotFound();
-            }
-
-            return View(@case);
-        }
-
-        // POST: Case/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
-        {
-            var @case = await _context.Cases.FindAsync(id);
-            if (@case != null)
-            {
-                _context.Cases.Remove(@case);
+                // Save new criminal
+                _context.Criminal.Add(criminal);
                 await _context.SaveChangesAsync();
+
+                // Create CaseCriminal link
+                var caseCriminal = new CaseCriminal
+                {
+                    CaseId = caseId,
+                    CriminalId = criminal.Id // Make sure Criminal.Id is populated after SaveChanges
+                };
+                _context.CaseCriminals.Add(caseCriminal);
             }
 
-            return RedirectToAction(nameof(Index));
+            await _context.SaveChangesAsync();
         }
 
-        private bool CaseExists(Guid id)
+        return RedirectToAction("Create");
+    }
+
+    // EVIDENCE
+    [HttpPost]
+    public async Task<IActionResult> CreateEvidence(List<Evidence> evidences, Guid caseId)
+    {
+        foreach (var ev in evidences)
         {
-            return _context.Cases.Any(e => e.Id == id);
+            ev.CaseId = caseId;
+            _context.Evidence.Add(ev);
         }
+
+        await _context.SaveChangesAsync();
+        return RedirectToAction("Create");
+    }
+
+    // WITNESSES
+    [HttpPost]
+    public async Task<IActionResult> CreateWitness(List<Witness> witnesses, Guid caseId)
+    {
+        foreach (var witness in witnesses)
+        {
+            witness.CaseId = caseId;
+            _context.Witnesses.Add(witness);
+        }
+
+        await _context.SaveChangesAsync();
+        return RedirectToAction("Create");
+    }
+
+    // VICTIMS
+    [HttpPost]
+    public async Task<IActionResult> CreateVictim(List<Victim> victims, Guid caseId)
+    {
+        foreach (var victim in victims)
+        {
+            victim.CaseId = caseId;
+            _context.Victims.Add(victim);
+        }
+
+        await _context.SaveChangesAsync();
+        return RedirectToAction("Create");
+    }
+
+    // SUSPECTS
+    [HttpPost]
+    public async Task<IActionResult> CreateSuspect(List<Suspect> suspects, Guid caseId)
+    {
+        foreach (var suspect in suspects)
+        {
+            suspect.CaseId = caseId;
+            _context.Suspect.Add(suspect);
+        }
+
+        await _context.SaveChangesAsync();
+        return RedirectToAction("Create");
     }
 }

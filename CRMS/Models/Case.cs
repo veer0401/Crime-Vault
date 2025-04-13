@@ -6,7 +6,6 @@ namespace CRMS.Models
     public class Case
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-        public string CaseId => Id.ToString().Substring(0, 8).ToUpper(); // Short ID for display
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public DateTime OpenDate { get; set; } = DateTime.Now;

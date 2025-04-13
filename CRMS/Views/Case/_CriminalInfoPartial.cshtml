@@ -1,0 +1,114 @@
+@model List<CRMS.Models.CriminalInfo>
+
+<div class="criminal-info-section">
+    <h4>Criminal Information</h4>
+    <div class="criminal-list" id="criminalList">
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            <div class="criminal-item card mb-3">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="control-label">Criminal</label>
+                        <select name="criminals[@i].CriminalId" class="form-control" required>
+                            <option value="">Select a criminal...</option>
+                            @foreach (var criminal in ViewBag.Criminals)
+                            {
+                                @if (Model[i].CriminalId == criminal.Id)
+{
+    <option value="@criminal.Id" selected>@criminal.Name</option>
+}
+else
+{
+    <option value="@criminal.Id">@criminal.Name</option>
+}
+
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label class="control-label">Role</label>
+                        <select name="criminals[@i].Role" class="form-control" required>
+                            @if (Model[i].Role == "Suspect")
+{
+    <option value="Suspect" selected>Suspect</option>
+}
+else
+{
+    <option value="Suspect">Suspect</option>
+}
+@if (Model[i].Role == "Accomplice")
+{
+    <option value="Accomplice" selected>Accomplice</option>
+}
+else
+{
+    <option value="Accomplice">Accomplice</option>
+}
+ @if (Model[i].Role == "Mastermind")
+{
+    <option value="Mastermind" selected>Mastermind</option>
+}
+else
+{
+    <option value="Mastermind">Mastermind</option>
+}
+                       </select>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label class="control-label">Notes</label>
+                        <textarea name="criminals[@i].Notes" class="form-control" rows="2">@Model[i].Notes</textarea>
+                    </div>
+                    <button type="button" class="btn btn-danger mt-2 remove-criminal">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+    <button type="button" class="btn btn-success" id="addCriminal">
+        <i class="fas fa-plus"></i> Add Criminal
+    </button>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#addCriminal').click(function () {
+            var criminalCount = $('.criminal-item').length;
+            var template = `
+                <div class="criminal-item card mb-3">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="control-label">Criminal</label>
+                            <select name="criminals[${criminalCount}].CriminalId" class="form-control" required>
+                                <option value="">Select a criminal...</option>
+                                @foreach (var criminal in ViewBag.Criminals)
+                                {
+                                    <option value="@criminal.Id">@criminal.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-group mt-2">
+                            <label class="control-label">Role</label>
+                            <select name="criminals[${criminalCount}].Role" class="form-control" required>
+                                <option value="Suspect">Suspect</option>
+                                <option value="Accomplice">Accomplice</option>
+                                <option value="Mastermind">Mastermind</option>
+                            </select>
+                        </div>
+                        <div class="form-group mt-2">
+                            <label class="control-label">Notes</label>
+                            <textarea name="criminals[${criminalCount}].Notes" class="form-control" rows="2"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-danger mt-2 remove-criminal">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
+                </div>`;
+            $('#criminalList').append(template);
+        });
+
+        $(document).on('click', '.remove-criminal', function () {
+            $(this).closest('.criminal-item').remove();
+        });
+    });
+</script>

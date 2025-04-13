@@ -15,6 +15,9 @@ namespace CRMS.Models
         public bool IsAnonymous { get; set; }
         public string? ProtectionStatus { get; set; }
         public string Credibility { get; set; } = "Unknown";
+        public int CredibilityRating { get; set; }
+
+        // public DateTime AddedDate { get; set; }
 
         // Foreign key for Case
         public Guid CaseId { get; set; }

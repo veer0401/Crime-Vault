@@ -89,47 +89,21 @@
 
         <!-- Cases Section -->
         
-        <li class='menu-item@(currentPage.StartsWith("/Cases") ? " active open" : "")'>
+        <li class='menu-item@(currentPage.StartsWith("/Case") ? " active open" : "")'>
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ti ti-briefcase"></i>
                 <div data-i18n="Cases">Cases</div>
             </a>
             <ul class="menu-sub">
-                <!-- Your Cases -->
-                <li class='menu-item@(currentPage == "/Cases/YourCases" ? " active" : "")'>
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <div data-i18n="Your Cases">Your Cases</div>
-                    </a>
-                    <ul class="menu-sub">
-                        <li class='menu-item@(currentPage == "/Cases/SolvedCases" ? " active" : "")'>
-                            <a asp-controller="Cases" asp-action="SolvedCases" class="menu-link">
-                                <div data-i18n="Solved Cases">Solved Cases</div>
-                            </a>
-                        </li>
-                        <li class='menu-item@(currentPage == "/Cases/Pending" ? " active" : "")'>
-                            <a asp-controller="Cases" asp-action="Pending" class="menu-link">
-                                <div data-i18n="Pending Cases">Pending Cases</div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                <!-- All Cases -->
-                <li class='menu-item@(currentPage.StartsWith("/Cases/All") ? " active open" : "")'>
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <li class='menu-item@(currentPage == "/Case/Index" ? " active" : "")'>
+                    <a asp-controller="Case" asp-action="Index" class="menu-link">
                         <div data-i18n="All Cases">All Cases</div>
                     </a>
-                    <ul class="menu-sub">
-                        <li class='menu-item@(currentPage == "/Cases/SolvedCases" ? " active" : "")'>
-                            <a asp-controller="Cases" asp-action="SolvedCases" class="menu-link">
-                                <div data-i18n="Solved Cases">Solved Cases</div>
-                            </a>
-                        </li>
-                        <li class='menu-item@(currentPage == "/Cases/Pending" ? " active" : "")'>
-                            <a asp-controller="Cases" asp-action="Pending" class="menu-link">
-                                <div data-i18n="Pending Cases">Pending Cases</div>
-                            </a>
-                        </li>
-                    </ul>
+                </li>
+                <li class='menu-item@(currentPage == "/Case/Create" ? " active" : "")'>
+                    <a asp-controller="Case" asp-action="Create" class="menu-link">
+                        <div data-i18n="Create Case">Create Case</div>
+                    </a>
                 </li>
             </ul>
         </li>
@@ -187,20 +161,27 @@
 
         <!-- Bounties Section -->
        
-        <li class='menu-item@(currentPage.StartsWith("/Bounties") ? " active open" : "")'>
-            <a asp-controller="Bounties" asp-action="List" class="menu-link">
+        <li class='menu-item@(currentPage.StartsWith("/Bounty") ? " active open" : "")'>
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ti ti-currency-dollar"></i>
                 <div data-i18n="Bounties">Bounties</div>
             </a>
+            <ul class="menu-sub">
+                <li class='menu-item@(currentPage == "/Bounty/Create" ? " active" : "")'>
+                    <a asp-controller="Bounty" asp-action="Create" class="menu-link">
+                        <div data-i18n="Create Bounty">Create Bounty</div>
+                    </a>
+                </li>
+            </ul>
         </li>
 
         <!-- Tasks Section -->
         
-        <li class='menu-item@(currentPage.StartsWith("/Tasks") ? " active open" : "")'>
+        <li class='menu-item@(currentPage.StartsWith("/Files") ? " active open" : "")'>
             <a asp-controller="Tasks" asp-action="List" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-checklist"></i>
-                <div data-i18n="Tasks">Tasks</div>
-            </a>
+                <div data-i18n="Tasks">Files</div>
+            </a>    
         </li>
 
         <!-- Messaging Section -->
@@ -217,7 +198,7 @@
         <li class='menu-item@(currentPage.StartsWith("/Misc") ? " active open" : "")'>
             <a asp-controller="Misc" asp-action="Index" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-settings"></i>
-                <div data-i18n="Miscellaneous">Miscellaneous</div>
+                <div data-i18n="Miscellaneous">Logs</div>
             </a>
         </li>
 

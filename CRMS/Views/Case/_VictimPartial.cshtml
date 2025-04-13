@@ -1,0 +1,59 @@
+@model CRMS.Models.Victim
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h5 class="mb-0">Victim Information</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Name" class="form-label">Name</label>
+                <input asp-for="Name" class="form-control" required />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="ContactNumber" class="form-label">Contact Number</label>
+                <input asp-for="ContactNumber" class="form-control" required />
+                <span asp-validation-for="ContactNumber" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label asp-for="Address" class="form-label">Address</label>
+                <textarea asp-for="Address" class="form-control" rows="3" required></textarea>
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label asp-for="Statement" class="form-label">Statement</label>
+                <textarea asp-for="Statement" class="form-control" rows="5" required></textarea>
+                <span asp-validation-for="Statement" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="InjurySustained" class="form-label">Injury Sustained</label>
+                <textarea asp-for="InjurySustained" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="InjurySustained" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="PropertyDamage" class="form-label">Property Damage</label>
+                <textarea asp-for="PropertyDamage" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="PropertyDamage" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="CompensationClaimed" class="form-label">Compensation Claimed</label>
+                <input asp-for="CompensationClaimed" type="number" step="0.01" class="form-control" />
+                <span asp-validation-for="CompensationClaimed" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="EmergencyContact" class="form-label">Emergency Contact</label>
+                <input asp-for="EmergencyContact" class="form-control" />
+                <span asp-validation-for="EmergencyContact" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+</div>

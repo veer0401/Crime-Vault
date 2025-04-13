@@ -29,14 +29,22 @@ using Microsoft.EntityFrameworkCore;
 
         public static async Task UpdateCriminalBounty(AppDbContext context, Guid criminalId)
         {
-            var totalBounty = await context.Bounties
-                .Where(b => b.CriminalId == criminalId)
-                .SumAsync(b => b.BountyPoints);
-
             var criminal = await context.Criminal.FindAsync(criminalId);
             if (criminal != null)
             {
-                criminal.TotalBounty = totalBounty;
+                if (criminal.Caught)
+                {
+                    // When criminal is caught, reset total bounty to 0
+                    criminal.TotalBounty = 0;
+                }
+                else
+                {
+                    // Calculate total bounty only for active bounties when criminal is not caught
+                    var totalBounty = await context.Bounties
+                        .Where(b => b.CriminalId == criminalId)
+                        .SumAsync(b => b.BountyPoints);
+                    criminal.TotalBounty = totalBounty;
+                }
                 await context.SaveChangesAsync();
             }
         }

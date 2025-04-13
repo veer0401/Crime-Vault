@@ -38,7 +38,7 @@
                             <div class="bg-label-primary rounded-2 p-2 mb-2">
                                 <i class="ti ti-users ti-md"></i>
                             </div>
-                            <h6 class="mb-0">@team.TeamMembers?.Count Members</h6>
+                            <h6 class="mb-0">@((team.TeamMembers?.Count ?? 0) + 1) Members</h6>
                         </div>
                         <p class="mb-0 mt-3">Team Code: @team.TeamCode</p>
                     </div>

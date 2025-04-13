@@ -16,7 +16,11 @@ namespace CRMS.Models
         public bool IsMinor { get; set; }
         public string? EmergencyContact { get; set; }
         public string? MedicalHistory { get; set; }
-
+        public DateTime AddedDate { get; set; }
+        public string? Statement { get; set; }
+         public string? InjurySustained { get; set; }
+    public string? PropertyDamage { get; set; }
+    public string? CompensationClaimed { get; set; }
         // Foreign key for Case
         public Guid CaseId { get; set; }
         public Case Case { get; set; } = null!;

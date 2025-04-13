@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using CRMS.Services;
 
 namespace CRMS.Controllers
 {
@@ -188,11 +189,47 @@ namespace CRMS.Controllers
             criminal.KnownHabits = criminalDTO.KnownHabits;
             criminal.PsychologicalProfile = criminalDTO.PsychologicalProfile;
             criminal.Address = criminalDTO.Address;
-            criminal.Caught = criminalDTO.Caught;
+            // Check if the criminal's caught status has changed
+            if (criminal.Caught != criminalDTO.Caught)
+            {
+                criminal.Caught = criminalDTO.Caught;
+                // Update bounty when criminal is caught
+                await BountyService.UpdateCriminalBounty(context, criminal.Id);
+            }
+            else
+            {
+                criminal.Caught = criminalDTO.Caught;
+            }
+
             // Save changes to the database
             await context.SaveChangesAsync();
 
             return RedirectToAction("ViewList", "Criminal");
+        }
+
+        [HttpGet]
+        [Route("Details/{id}")]
+        public async Task<IActionResult> Details(Guid id)
+        {
+            var criminal = await context.Criminal
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (criminal == null)
+            {
+                return RedirectToAction("ViewList");
+            }
+
+            // Load all bounties for this criminal, ordered by creation date
+            var bounties = await context.Bounties
+                .Include(b => b.Case)
+                .Include(b => b.CreatedBy)
+                .Where(b => b.CriminalId == id)
+                .OrderByDescending(b => b.CreatedDate)
+                .ToListAsync();
+
+            ViewBag.Bounties = bounties;
+
+            return View(criminal);
         }
 
         [HttpDelete] // Change this to HttpDelete

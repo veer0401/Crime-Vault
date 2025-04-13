@@ -1,0 +1,47 @@
+@model CRMS.Models.Witness
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h5 class="mb-0">Witness Information</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Name" class="form-label">Name</label>
+                <input asp-for="Name" class="form-control" required />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="ContactNumber" class="form-label">Contact Number</label>
+                <input asp-for="ContactNumber" class="form-control" required />
+                <span asp-validation-for="ContactNumber" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label asp-for="Address" class="form-label">Address</label>
+                <textarea asp-for="Address" class="form-control" rows="3" required></textarea>
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label asp-for="Statement" class="form-label">Statement</label>
+                <textarea asp-for="Statement" class="form-control" rows="5" required></textarea>
+                <span asp-validation-for="Statement" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="RelationToCase" class="form-label">Relation to Case</label>
+                <input asp-for="RelationToCase" class="form-control" required />
+                <span asp-validation-for="RelationToCase" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="CredibilityRating" class="form-label">Credibility Rating (1-10)</label>
+                <input asp-for="CredibilityRating" type="number" min="1" max="10" class="form-control" required />
+                <span asp-validation-for="CredibilityRating" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+</div>
