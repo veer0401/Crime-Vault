@@ -1,0 +1,79 @@
+@model IEnumerable<CRMS.Models.ActivityLog>
+
+@{
+    ViewData["Title"] = "Activity Logs";
+    var istTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+}
+
+<div class="container mt-4">
+    <h1>Activity Logs</h1>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Search..." value="@ViewContext.HttpContext.Request.Query["searchTerm"]">
+                </div>
+                <div class="col-md-2">
+                    <select name="actionType" class="form-select">
+                        <option value="">All Actions</option>
+                        @foreach (var action in ViewBag.ActionTypes)
+                        {
+                            <option value="@action" selected="@(ViewContext.HttpContext.Request.Query["actionType"] == action)">@action</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="entityType" class="form-select">
+                        <option value="">All Entities</option>
+                        @foreach (var entity in ViewBag.EntityTypes)
+                        {
+                            <option value="@entity" selected="@(ViewContext.HttpContext.Request.Query["entityType"] == entity)">@entity</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="startDate" class="form-control" value="@ViewContext.HttpContext.Request.Query["startDate"]">
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="endDate" class="form-control" value="@ViewContext.HttpContext.Request.Query["endDate"]">
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Timestamp (IST)</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Entity</th>
+                    <th>Details</th>
+                    <th>IP Address</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td>@TimeZoneInfo.ConvertTimeFromUtc(log.Timestamp, istTimeZone).ToString("dd/MM/yyyy HH:mm:ss")</td>
+                        <td>@log.User.UserName</td>
+                        <td>@log.Action</td>
+                        <td>@log.EntityType</td>
+                        <td>@log.Details</td>
+                        <td>@log.IPAddress</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@log.Id" class="btn btn-sm btn-info">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div> 

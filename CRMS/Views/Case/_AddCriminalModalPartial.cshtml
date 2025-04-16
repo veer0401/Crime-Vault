@@ -1,0 +1,157 @@
+@model CRMS.Models.EditModel.EditCriminalViewModel
+
+<div class="modal fade" id="addCriminalModal" tabindex="-1" aria-labelledby="addCriminalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Criminal to Case</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="existingCriminalForm">
+                    <input type="hidden" asp-for="CaseId" id="CaseId" />
+                    <input type="hidden" asp-for="Id" id="CriminalId" name="Id" />
+                    <input type="hidden" asp-for="Name" id="CriminalName" name="Name" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Select Criminal</label>
+                        <select id="existingCriminalSelect" class="form-select" required>
+                            <option value="">-- Select a Criminal --</option>
+                        </select>
+                        <span id="existingCriminalSelectError" class="text-danger" style="display: none;">Please select a criminal</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Role" class="form-label"></label>
+                        <input asp-for="Role" name="Role" class="form-control" id="Role" />
+                        <span asp-validation-for="Role" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Notes" class="form-label"></label>
+                        <textarea asp-for="Notes" name="Notes" class="form-control" rows="3" id="Notes"></textarea>
+                        <span asp-validation-for="Notes" class="text-danger"></span>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveExistingCriminal">Add Criminal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        // Load existing criminals into the dropdown from /api/CriminalAPI
+        $.get('/api/CriminalAPI', function (criminals) {
+            var select = $('#existingCriminalSelect');
+            select.empty(); // Clear existing options
+            select.append('<option value="">-- Select a Criminal --</option>');
+
+            criminals.forEach(function (criminal) {
+                select.append(
+                    $('<option></option>')
+                        .attr('value', criminal.id)
+                        .attr('data-name', criminal.name)
+                        .text(criminal.name)
+                );
+            });
+        }).fail(function () {
+            toastr.error("Failed to load criminals from API");
+        });
+
+        // Update the hidden CriminalId and Name when a criminal is selected
+        $('#existingCriminalSelect').change(function () {
+            var selectedOption = $(this).find('option:selected');
+            $('#CriminalId').val(selectedOption.val());
+            $('#CriminalName').val(selectedOption.data('name'));
+        });
+
+        // Handle form submission
+        $('#saveExistingCriminal').click(function () {
+            // Validate form
+            var isValid = true;
+            $('.text-danger').hide();
+
+            var selectedCriminal = $('#existingCriminalSelect').val();
+            if (!selectedCriminal) {
+                $('#existingCriminalSelectError').show();
+                isValid = false;
+            }
+
+            var role = $('#Role').val();
+            if (!role) {
+                $('span[data-valmsg-for="Role"]').show();
+                isValid = false;
+            }
+
+            if (!isValid) {
+                return;
+            }
+
+            // Create form data
+            var formData = {
+                caseId: $('#CaseId').val(),
+                id: $('#CriminalId').val(),
+                name: $('#CriminalName').val(),
+                role: $('#Role').val(),
+                notes: $('#Notes').val()
+            };
+
+            console.log('Form data before submission:', formData);
+
+            $.ajax({
+                url: '/Case/AddCriminal',
+                type: 'POST',
+                data: JSON.stringify(formData),
+                contentType: 'application/json',
+                success: function (response) {
+                    console.log('Server response:', response);
+                    if (response.success) {
+                        toastr.success('Criminal added successfully');
+                        $('#addCriminalModal').modal('hide');
+                        location.reload();
+                    } else {
+                        console.error('Server returned error:', response);
+                        if (response.message) {
+                            toastr.error(response.message);
+                        }
+                        if (response.errors) {
+                            Object.keys(response.errors).forEach(function (key) {
+                                var errorMessage = Array.isArray(response.errors[key])
+                                    ? response.errors[key].join(', ')
+                                    : response.errors[key];
+                                $('span[data-valmsg-for="' + key + '"]').text(errorMessage).show();
+                            });
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX error:', {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.errors) {
+                            Object.keys(response.errors).forEach(function (key) {
+                                var errorMessage = Array.isArray(response.errors[key])
+                                    ? response.errors[key].join(', ')
+                                    : response.errors[key];
+                                $('span[data-valmsg-for="' + key + '"]').text(errorMessage).show();
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                        toastr.error('An error occurred while adding the criminal');
+                    }
+                }
+            });
+        });
+    });
+</script>

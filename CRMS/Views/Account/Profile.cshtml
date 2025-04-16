@@ -1,0 +1,121 @@
+@using CRMS.Models
+@model Users
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/form-validation/form-validation.css" />
+}
+
+@section VendorScripts {
+    <script src="~/vendor/libs/form-validation/popular.js"></script>
+    <script src="~/vendor/libs/form-validation/bootstrap5.js"></script>
+    <script src="~/vendor/libs/form-validation/auto-focus.js"></script>
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/vendor/css/pages/page-account-settings.css" />
+}
+
+@section PageScripts {
+    <script src="~/js/pages-account-settings-account.js"></script>
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4">
+        <span class="text-muted fw-light">Account Settings /</span> Profile
+    </h4>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <h5 class="card-header">Profile Details</h5>
+                <div class="card-body">
+                    <form id="formAccountSettings" method="POST" asp-action="UpdateProfile">
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                <label for="FullName" class="form-label">Full Name</label>
+                                <input class="form-control" type="text" id="FullName" name="FullName" value="@Model.FullName" autofocus />
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                <label for="Email" class="form-label">E-mail</label>
+                                <input class="form-control" type="text" id="Email" name="Email" value="@Model.Email" placeholder="john.doe@example.com" readonly />
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                <label class="form-label" for="PhoneNumber">Phone Number</label>
+                                <div class="input-group input-group-merge">
+                                    <span class="input-group-text">IN (+91)</span>
+                                    <input type="text" id="PhoneNumber" name="PhoneNumber" class="form-control" value="@Model.PhoneNumber" placeholder="202 555 0111" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <button type="submit" class="btn btn-primary me-2">Save changes</button>
+                            <button type="reset" class="btn btn-outline-secondary">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Assigned Cases -->
+            <div class="card">
+                <h5 class="card-header">Assigned Cases</h5>
+                <div class="card-body">
+                    @if (ViewBag.AssignedCases != null && ViewBag.AssignedCases.Count > 0)
+                    {
+                        <div class="table-responsive text-nowrap">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Case Title</th>
+                                        <th>Team</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Assigned Date</th>
+                                        <th>Role</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="table-border-bottom-0">
+                                    @foreach (var case_ in ViewBag.AssignedCases)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@case_.Title</strong>
+                                                <div class="text-muted">@case_.Description</div>
+                                            </td>
+                                            <td>@case_.TeamName</td>
+                                            <td>
+                                                <span class="badge bg-label-@(case_.Status == "Open" ? "success" : case_.Status == "In Progress" ? "warning" : "danger") me-1">
+                                                    @case_.Status
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-label-@(case_.Priority == "High" ? "danger" : case_.Priority == "Medium" ? "warning" : "info") me-1">
+                                                    @case_.Priority
+                                                </span>
+                                            </td>
+                                            <td>@case_.AssignedDate.ToString("MMM dd, yyyy")</td>
+                                            <td>
+                                                <span class="badge bg-label-@(case_.IsTeamLeader ? "primary" : "secondary") me-1">
+                                                    @(case_.IsTeamLeader ? "Team Leader" : "Team Member")
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            No cases assigned to you yet.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

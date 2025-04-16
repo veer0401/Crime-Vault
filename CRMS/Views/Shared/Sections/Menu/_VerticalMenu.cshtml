@@ -180,25 +180,23 @@
         <li class='menu-item@(currentPage.StartsWith("/Files") ? " active open" : "")'>
             <a asp-controller="Tasks" asp-action="List" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-checklist"></i>
-                <div data-i18n="Tasks">Files</div>
+                <div data-i18n="Files">Files</div>
             </a>    
         </li>
 
         <!-- Messaging Section -->
-        
-        <li class='menu-item@(currentPage.StartsWith("/Messages") ? " active open" : "")'>
-            <a asp-controller="Messages" asp-action="Inbox" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-message"></i>
-                <div data-i18n="Messaging">Messaging</div>
+        <li class='menu-item@(currentPage.StartsWith("/TeamMessage") ? " active" : "")'>
+            <a asp-controller="TeamMessage" asp-action="Index" class="menu-link">
+                <i class="menu-icon tf-icons ti ti-message-circle"></i>
+                <div data-i18n="Team Chat">Team Chat</div>
             </a>
         </li>
-
         <!-- Miscellaneous Section -->
        
         <li class='menu-item@(currentPage.StartsWith("/Misc") ? " active open" : "")'>
-            <a asp-controller="Misc" asp-action="Index" class="menu-link">
+            <a asp-controller="Activitylog" asp-action="Index" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-settings"></i>
-                <div data-i18n="Miscellaneous">Logs</div>
+                <div data-i18n="Logs">Logs</div>
             </a>
         </li>
 

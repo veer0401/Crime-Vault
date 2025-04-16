@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using CRMS.Services;
 
 namespace CRMS.Controllers
 {
@@ -16,16 +17,29 @@ namespace CRMS.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserManager<Users> _userManager;
+        private readonly IActivityLogService _activityLogService;
 
-        public TeamController(AppDbContext context, UserManager<Users> userManager)
+        public TeamController(
+            AppDbContext context, 
+            UserManager<Users> userManager,
+            IActivityLogService activityLogService)
         {
             _context = context;
             _userManager = userManager;
+            _activityLogService = activityLogService;
         }
 
         // Show Team Creation Form
         public IActionResult Create()
         {
+            // Log the activity
+            _activityLogService.LogActivityAsync(
+                "View",
+                "TeamCreateForm",
+                "New",
+                "Viewed team creation form"
+            ).Wait();
+
             return View();
         }
         public IActionResult Join()
@@ -102,6 +116,15 @@ namespace CRMS.Controllers
                     .ToList();
 
                 ViewBag.AssignedCases = assignedCases;
+
+                // Log the activity
+                await _activityLogService.LogActivityAsync(
+                    "View",
+                    "Team",
+                    id.ToString(),
+                    $"Viewed details of team '{team.Name}'"
+                );
+
                 return View(team);
             }
             catch (Exception ex)
@@ -163,6 +186,15 @@ namespace CRMS.Controllers
 
             ViewBag.AvailableUsers = availableUsers;
             ViewBag.AssignedCases = assignedCases;
+
+            // Log the activity
+            await _activityLogService.LogActivityAsync(
+                "View",
+                "TeamEditForm",
+                id.ToString(),
+                $"Viewed edit form for team '{team.Name}'"
+            );
+
             return View(team);
         }
 
@@ -232,6 +264,14 @@ namespace CRMS.Controllers
                 _context.TeamMembers.Add(teamMember);
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Team member added successfully.";
+
+                // Log the activity
+                await _activityLogService.LogActivityAsync(
+                    "Add",
+                    "TeamMember",
+                    teamMember.Id.ToString(),
+                    $"Added member to team '{team.Name}'"
+                );
             }
             catch (DbUpdateException ex)
             {
@@ -247,14 +287,17 @@ namespace CRMS.Controllers
             }
 
             return RedirectToAction(nameof(Edit), new { id = teamId });
-
         }
 
         // Handle Team Member Removal
         [HttpPost]
         public async Task<IActionResult> RemoveMember(Guid teamId, string userId)
         {
-            var team = await _context.Teams.FindAsync(teamId);
+            var team = await _context.Teams
+                .Include(t => t.TeamMembers)
+                .ThenInclude(tm => tm.User)
+                .FirstOrDefaultAsync(t => t.Id == teamId);
+
             if (team == null)
                 return NotFound();
 
@@ -262,12 +305,21 @@ namespace CRMS.Controllers
                 return Forbid();
 
             var teamMember = await _context.TeamMembers
+                .Include(tm => tm.User)
                 .FirstOrDefaultAsync(tm => tm.TeamId == teamId && tm.UserId == userId);
 
             if (teamMember != null)
             {
                 _context.TeamMembers.Remove(teamMember);
                 await _context.SaveChangesAsync();
+
+                // Log the activity
+                await _activityLogService.LogActivityAsync(
+                    "Remove",
+                    "TeamMember",
+                    teamMember.Id.ToString(),
+                    $"Removed member from team '{team.Name}'"
+                );
             }
 
             return RedirectToAction(nameof(Edit), new { id = teamId });

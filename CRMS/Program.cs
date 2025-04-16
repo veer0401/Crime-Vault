@@ -18,6 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 
 // ✅ Fix: Use `builder.Configuration`
 builder.Services.AddDbContext<AppDbContext>(options =>

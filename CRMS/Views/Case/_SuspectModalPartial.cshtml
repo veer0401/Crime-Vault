@@ -1,0 +1,75 @@
+@model CRMS.Models.EditModel.EditSuspectViewModel
+
+<div class="modal fade" id="addSuspectModal" tabindex="-1" role="dialog" aria-labelledby="addSuspectModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSuspectModalLabel">Add Suspect</h5>
+-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+-                    <span aria-hidden="true">&times;</span>
+-                </button>
++                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="suspectForm" asp-action="AddSuspect" method="post">
+                <div class="modal-body">
+                    <input type="hidden" asp-for="CaseId" />
+                    <input type="hidden" asp-for="Id" />
+                    
+                    <div class="form-group">
+                        <label asp-for="Name" class="control-label"></label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Description" class="control-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="LastSeenDate" class="control-label"></label>
+                        <input asp-for="LastSeenDate" class="form-control" type="date" />
+                        <span asp-validation-for="LastSeenDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="LastKnownLocation" class="control-label"></label>
+                        <input asp-for="LastKnownLocation" class="form-control" />
+                        <span asp-validation-for="LastKnownLocation" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Status" class="control-label"></label>
+                        <select asp-for="Status" class="form-control">
+                            <option value="">Select Status</option>
+                            <option value="At Large">At Large</option>
+                            <option value="Under Surveillance">Under Surveillance</option>
+                            <option value="In Custody">In Custody</option>
+                            <option value="Released">Released</option>
+                            <option value="Cleared">Cleared</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="ThreatLevel" class="control-label"></label>
+                        <select asp-for="ThreatLevel" class="form-control">
+                            <option value="">Select Threat Level</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                            <option value="Critical">Critical</option>
+                        </select>
+                        <span asp-validation-for="ThreatLevel" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
++                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Save Suspect</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

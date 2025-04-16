@@ -113,6 +113,12 @@
               <div data-i18n="Chat">Chat</div>
             </a>
           </li>
+          <li class='menu-item@(currentPage.StartsWith("/TeamMessage") ? " active" : "")'>
+            <a asp-controller="TeamMessage" asp-action="Index" class="menu-link">
+              <i class="menu-icon tf-icons ti ti-message-circle"></i>
+              <div data-i18n="Team Chat">Team Chat</div>
+            </a>
+          </li>
           <li class='menu-item@(currentPage == "/Apps/Calendar" ? " active" : "")'>
             <a asp-controller="Apps" asp-action="Calendar" class="menu-link">
               <i class="menu-icon tf-icons ti ti-calendar"></i>

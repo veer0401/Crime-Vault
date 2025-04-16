@@ -41,17 +41,19 @@
                                 </td>
                                 <td>@item.CreatedDate.ToString("MMM dd, yyyy")</td>
                                 <td>
-                                    <div class="dropdown">
-                                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="@Url.Action("Details", new { id = item.Id })">
-                                                <i class="bx bx-show-alt me-1"></i> View
-                                            </a>
-                                            <a class="dropdown-item" href="@Url.Action("Edit", new { id = item.Id })">
-                                                <i class="bx bx-edit-alt me-1"></i> Edit
-                                            </a>
+                                    <div class="d-flex gap-2">
+                                        <a href="@Url.Action("Edit", new { id = item.Id })" class="btn btn-sm btn-primary">
+                                            <i class="bx bx-edit-alt me-1"></i> Edit
+                                        </a>
+                                        <div class="dropdown">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                <i class="bx bx-dots-vertical-rounded"></i>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item" href="@Url.Action("Details", new { id = item.Id })">
+                                                    <i class="bx bx-show-alt me-1"></i> View Details
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>

@@ -1,0 +1,44 @@
+@model CRMS.Models.ActivityLog
+
+@{
+    ViewData["Title"] = "Activity Log Details";
+    var istTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+}
+
+<div class="container mt-4">
+    <h1>Activity Log Details</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-3">Timestamp (IST)</dt>
+                <dd class="col-sm-9">@TimeZoneInfo.ConvertTimeFromUtc(Model.Timestamp, istTimeZone).ToString("dd/MM/yyyy HH:mm:ss")</dd>
+
+                <dt class="col-sm-3">User</dt>
+                <dd class="col-sm-9">@Model.User.UserName</dd>
+
+                <dt class="col-sm-3">Action</dt>
+                <dd class="col-sm-9">@Model.Action</dd>
+
+                <dt class="col-sm-3">Entity Type</dt>
+                <dd class="col-sm-9">@Model.EntityType</dd>
+
+                <dt class="col-sm-3">Entity ID</dt>
+                <dd class="col-sm-9">@Model.EntityId</dd>
+
+                <dt class="col-sm-3">Details</dt>
+                <dd class="col-sm-9">@Model.Details</dd>
+
+                <dt class="col-sm-3">IP Address</dt>
+                <dd class="col-sm-9">@Model.IPAddress</dd>
+
+                <dt class="col-sm-3">User Agent</dt>
+                <dd class="col-sm-9">@Model.UserAgent</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+</div> 

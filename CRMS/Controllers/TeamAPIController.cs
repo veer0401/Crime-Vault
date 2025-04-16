@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using CRMS.Services;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -14,17 +15,29 @@ public class TeamApiController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly UserManager<Users> _userManager;
+    private readonly IActivityLogService _activityLogService;
 
-    public TeamApiController(AppDbContext context, UserManager<Users> userManager)
+    public TeamApiController(
+        AppDbContext context, 
+        UserManager<Users> userManager,
+        IActivityLogService activityLogService)
     {
         _context = context;
         _userManager = userManager;
+        _activityLogService = activityLogService;
     }
 
     // ✅ API to get users
     [HttpGet("users")]
     public async Task<IActionResult> GetUsers()
     {
+        await _activityLogService.LogActivityAsync(
+            "View",
+            "UserList",
+            "All",
+            "Viewed list of all users"
+        );
+
         var users = await _userManager.Users
             .Select(u => new { u.Id, u.FullName })
             .ToListAsync();
@@ -57,6 +70,14 @@ public class TeamApiController : ControllerBase
             _context.Teams.Add(team);
             await _context.SaveChangesAsync();
 
+            // Log the activity
+            await _activityLogService.LogActivityAsync(
+                "Create",
+                "Team",
+                team.Id.ToString(),
+                $"Created new team '{team.Name}' with team code '{teamCode}'"
+            );
+
             return CreatedAtAction(nameof(GetTeamDetails), new { id = team.Id }, 
                 new { success = true, data = new { team.Id, team.Name, team.TeamCode, TeamLeader = user.FullName } });
         }
@@ -67,7 +88,6 @@ public class TeamApiController : ControllerBase
     }
 
     // ✅ API to get team details with members
-    
     [HttpGet("details/{id}")]
     public async Task<IActionResult> GetTeamDetails(Guid id)
     {
@@ -82,6 +102,14 @@ public class TeamApiController : ControllerBase
             {
                 return NotFound(new { success = false, message = "Team not found." });
             }
+
+            // Log the activity
+            await _activityLogService.LogActivityAsync(
+                "View",
+                "Team",
+                team.Id.ToString(),
+                $"Viewed details of team '{team.Name}'"
+            );
 
             var teamLeader = await _userManager.FindByIdAsync(team.TeamLeaderId);
             string teamLeaderName = teamLeader != null ? teamLeader.FullName : "Unknown";
@@ -100,7 +128,7 @@ public class TeamApiController : ControllerBase
                     { 
                         m.User.Id, 
                         m.User.FullName,
-                        JoinDate = m.Id // Using the TeamMember Id as a reference
+                        JoinDate = m.Id
                     }).ToList()
                 }
             };
@@ -112,7 +140,6 @@ public class TeamApiController : ControllerBase
             return StatusCode(500, new { success = false, message = "An error occurred while fetching team details." });
         }
     }
-
 
     // ✅ API to join a team using team code
     [HttpPost("join")]
@@ -150,6 +177,14 @@ public class TeamApiController : ControllerBase
             _context.TeamMembers.Add(teamMember);
             await _context.SaveChangesAsync();
 
+            // Log the activity
+            await _activityLogService.LogActivityAsync(
+                "Join",
+                "Team",
+                team.Id.ToString(),
+                $"Joined team '{team.Name}' using team code"
+            );
+
             return Ok(new { 
                 success = true, 
                 message = "Successfully joined the team.",
@@ -185,6 +220,14 @@ public class TeamApiController : ControllerBase
 
         try
         {
+            // Log the activity
+            await _activityLogService.LogActivityAsync(
+                "View",
+                "TeamCases",
+                teamId.ToString(),
+                $"Viewed cases assigned to team '{team.Name}'"
+            );
+
             var cases = team.CaseTeams
                 .Select(ct => new
                 {
@@ -255,6 +298,14 @@ public class TeamApiController : ControllerBase
             _context.CaseTeams.Add(caseTeam);
             await _context.SaveChangesAsync();
 
+            // Log the activity
+            await _activityLogService.LogActivityAsync(
+                "Assign",
+                "Case",
+                caseId.ToString(),
+                $"Assigned case to team '{team.Name}'"
+            );
+
             return Ok(new { 
                 success = true, 
                 message = "Case assigned successfully.",
@@ -300,6 +351,14 @@ public class TeamApiController : ControllerBase
             _context.CaseTeams.Remove(caseTeam);
             await _context.SaveChangesAsync();
 
+            // Log the activity
+            await _activityLogService.LogActivityAsync(
+                "Remove",
+                "Case",
+                caseId.ToString(),
+                $"Removed case from team '{team.Name}'"
+            );
+
             return Ok(new { 
                 success = true, 
                 message = "Case removed from team successfully.",
@@ -324,6 +383,14 @@ public class TeamApiController : ControllerBase
 
         if (team == null)
             return NotFound(new { message = "Team not found." });
+
+        // Log the activity
+        await _activityLogService.LogActivityAsync(
+            "View",
+            "TeamStatistics",
+            teamId.ToString(),
+            $"Viewed statistics for team '{team.Name}'"
+        );
 
         var statistics = new
         {

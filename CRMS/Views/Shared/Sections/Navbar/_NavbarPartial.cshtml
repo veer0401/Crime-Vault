@@ -281,63 +281,69 @@
     <!--/ Notification -->
 
     <!-- User -->
-    <li class="nav-item navbar-dropdown dropdown-user dropdown">
-      <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
-        <div class="avatar avatar-online">
-          <img src="~/img/avatars/1.png" alt class="rounded-circle">
-        </div>
-      </a>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li>
-          <a class="dropdown-item mt-0" asp-controller="Pages" asp-action="AccountSettings">
-            <div class="d-flex align-items-center">
-              <div class="flex-shrink-0 me-2">
+        <li class="nav-item navbar-dropdown dropdown-user dropdown">
+            <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
                 <div class="avatar avatar-online">
-                  <img src="~/img/avatars/1.png" alt class="rounded-circle">
+                    @using Microsoft.AspNetCore.Identity
+                    @inject UserManager<Users> UserManager
+                    @inject SignInManager<Users> SignInManager
+                    @inject RoleManager<IdentityRole> RoleManager
+
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        var user = await UserManager.GetUserAsync(User);
+                        <span class="avatar-initial rounded-circle bg-label-primary">@user?.FullName[0]</span>
+                    }
                 </div>
-              </div>
-                            @using Microsoft.AspNetCore.Identity
-                            @inject UserManager<Users> UserManager
-                            @inject SignInManager<Users> SignInManager
-                            @inject RoleManager<IdentityRole> RoleManager
-
-                            @if (SignInManager.IsSignedIn(User))
-                            {
-                                var user = await UserManager.GetUserAsync(User);
-                                var roles = await UserManager.GetRolesAsync(user);
-
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">@user?.FullName</h6>
-                                    <small class="text-muted">@(roles.Any() ? string.Join(", ", roles) : "No Role Assigned")</small>
-                                </div>
-                            }
-            </div>
-          </a>
-        </li>
-        <li>
-          <div class="dropdown-divider my-1 mx-n2"></div>
-        </li>
-        <li>
-          <a class="dropdown-item" asp-controller="Pages" asp-action="ProfileUser">
-            <i class="ti ti-user me-3 ti-md"></i><span class="align-middle">My Profile</span>
-          </a>
-        </li>
-        <li>
-          <a class="dropdown-item" asp-controller="Pages" asp-action="AccountSettings">
-            <i class="ti ti-settings me-3 ti-md"></i><span class="align-middle">Settings</span>
-          </a>
-        </li>
-        <li>
-          <div class="d-grid px-2 pt-2 pb-1">
-            <a class="btn btn-sm btn-danger d-flex" asp-controller="Account" asp-action="Logout">
-              <small class="align-middle">Logout</small>
-              <i class="ti ti-logout ms-2 ti-14px"></i>
             </a>
-          </div>
-        </li>
-      </ul>
-    </li>
-    <!--/ User -->
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item mt-0" asp-controller="Pages" asp-action="AccountSettings">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0 me-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    @if (SignInManager.IsSignedIn(User))
+                                    {
+                                        var user = await UserManager.GetUserAsync(User);
+                                        var roles = await UserManager.GetRolesAsync(user);
+
+                                        <div class="avatar avatar-online">
+                                            <span class="avatar-initial rounded-circle bg-label-primary fs-4">
+                                                @user?.FullName[0]
+                                            </span>
+                                        </div>
+
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">@user?.FullName</h6>
+                                            <small class="text-muted">
+                                                @(roles.Any() ? string.Join(", ", roles) : "No Role Assigned")
+                                            </small>
+                                        </div>
+                                    }
+                                </div>
+
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <div class="dropdown-divider my-1 mx-n2"></div>
+                </li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Account" asp-action="Profile">
+                        <i class="ti ti-user me-3 ti-md"></i><span class="align-middle">My Profile</span>
+                    </a>
+                </li>
+                <li>
+                    <div class="d-grid px-2 pt-2 pb-1">
+                        <a class="btn btn-sm btn-danger d-flex" asp-controller="Account" asp-action="Logout">
+                            <small class="align-middle">Logout</small>
+                            <i class="ti ti-logout ms-2 ti-14px"></i>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </li> <!--/ User -->
 
   </ul>
 </div>

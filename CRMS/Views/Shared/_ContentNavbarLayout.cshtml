@@ -88,3 +88,58 @@
   <!-- Drag Target Area To SlideIn Menu On Small Screens -->
   <div class="drag-target"></div>
 </div>
+
+<div class="avatar avatar-online">
+    @using Microsoft.AspNetCore.Identity
+    @inject UserManager<Users> UserManager
+    @inject SignInManager<Users> SignInManager
+    @inject RoleManager<IdentityRole> RoleManager
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var user = await UserManager.GetUserAsync(User);
+        <span class="avatar-initial rounded-circle bg-label-primary">@user?.FullName[0]</span>
+    }
+</div>
+
+<a href="#" class="dropdown-item">
+  <div class="d-flex align-items-center">
+    <div class="flex-shrink-0 me-2">
+      <div class="avatar avatar-online">
+        @if (SignInManager.IsSignedIn(User))
+        {
+            var user = await UserManager.GetUserAsync(User);
+            var roles = await UserManager.GetRolesAsync(user);
+            <span class="avatar-initial rounded-circle bg-label-primary">@user?.FullName[0]</span>
+            <div class="flex-grow-1">
+                <h6 class="mb-0">@user?.FullName</h6>
+                <small class="text-muted">@(roles.Any() ? string.Join(", ", roles) : "No Role Assigned")</small>
+            </div>
+        }
+      </div>
+    </div>
+  </div>
+</a>
+
+<ul class="dropdown-menu dropdown-menu-end">
+  <li>
+    <a class="dropdown-item mt-0" asp-controller="Pages" asp-action="AccountSettings">
+      <div class="d-flex align-items-center">
+        <div class="flex-shrink-0 me-2">
+          <div class="avatar avatar-online">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                var user = await UserManager.GetUserAsync(User);
+                var roles = await UserManager.GetRolesAsync(user);
+                <span class="avatar-initial rounded-circle bg-label-primary">@user?.FullName[0]</span>
+                <div class="flex-grow-1">
+                    <h6 class="mb-0">@user?.FullName</h6>
+                    <small class="text-muted">@(roles.Any() ? string.Join(", ", roles) : "No Role Assigned")</small>
+                </div>
+            }
+          </div>
+        </div>
+      </div>
+    </a>
+  </li>
+</ul>

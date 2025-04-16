@@ -1,274 +1,287 @@
-@using Microsoft.AspNetCore.Identity
-@inject UserManager<Users> UserManager
-@model CRMS.Models.Case
+@model CRMS.Models.EditModel.EditCaseDetailsViewModel
+@using CRMS.Models.EditModel
 @{
-    ViewData["Title"] = "Edit Case";
+    ViewData["Title"] = "Edit Case Details";
     Layout = "_ContentNavbarLayout";
-    var currentUser = await UserManager.GetUserAsync(User);
-    var userRoles = await UserManager.GetRolesAsync(currentUser);
-    var canAssignTeams = userRoles.Contains("Warden") || userRoles.Contains("Sentinel Prime");
-    
-    // Initialize collections if null
-    Model.CaseCriminals ??= new List<CaseCriminal>();
-    Model.Suspects ??= new List<Suspect>();
-    Model.Evidences ??= new List<Evidence>();
-    Model.Witnesses ??= new List<Witness>();
-    Model.Victims ??= new List<Victim>();
 }
 
-<div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="py-3 mb-4">Edit Case</h4>
 
+<div class="container-fluid">
     <div class="row">
         <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header px-0 pt-0">
-                    <div class="nav-align-top">
-                        <ul class="nav nav-tabs" role="tablist">
-                            <li class="nav-item">
-                                <button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#case-details" role="tab" aria-selected="true">
-                                    <i class="ti ti-file-description me-1"></i>
-                                    <span class="d-none d-sm-block">Case Details</span>
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#criminal-info" role="tab" aria-selected="false">
-                                    <i class="ti ti-user-exclamation me-1"></i>
-                                    <span class="d-none d-sm-block">Criminal Information</span>
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#evidence-info" role="tab" aria-selected="false">
-                                    <i class="ti ti-file-search me-1"></i>
-                                    <span class="d-none d-sm-block">Evidence</span>
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#witness-info" role="tab" aria-selected="false">
-                                    <i class="ti ti-users me-1"></i>
-                                    <span class="d-none d-sm-block">Witnesses</span>
-                                </button>
-                            </li>
-                            <li class="nav-item">
-                                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#victim-info" role="tab" aria-selected="false">
-                                    <i class="ti ti-user-shield me-1"></i>
-                                    <span class="d-none d-sm-block">Victims</span>
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Edit Case Details</h4>
                 </div>
-
                 <div class="card-body">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                    <div class="tab-content">
-                        <!-- Case Details Tab -->
-                        <div class="tab-pane fade show active" id="case-details" role="tabpanel">
-                            <form asp-action="UpdateCaseDetails" method="post">
+                    <ul class="nav nav-tabs" id="caseTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" role="tab">Case Details</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="criminals-tab" data-bs-toggle="tab" data-bs-target="#criminals" role="tab">Criminals</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="evidence-tab" data-bs-toggle="tab" data-bs-target="#evidence" role="tab">Evidence</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="witnesses-tab" data-bs-toggle="tab" data-bs-target="#witnesses" role="tab">Witnesses</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="victims-tab" data-bs-toggle="tab" data-bs-target="#victims" role="tab">Victims</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="suspects-tab" data-bs-toggle="tab" data-bs-target="#suspects" role="tab">Suspects</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mt-3" id="caseTabContent">
+                        <div class="tab-pane fade show active" id="details" role="tabpanel">
+                            <form asp-action="Edit" method="post">
                                 <input type="hidden" asp-for="Id" />
-                                <div class="mb-3">
-                                    <label asp-for="Title" class="form-label">Title</label>
-                                    <input asp-for="Title" class="form-control" placeholder="Enter case title" required />
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                                <div class="form-group">
+                                    <label asp-for="Title" class="control-label"></label>
+                                    <input asp-for="Title" class="form-control" />
                                     <span asp-validation-for="Title" class="text-danger"></span>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label asp-for="Description" class="form-label">Description</label>
-                                    <textarea asp-for="Description" class="form-control" rows="3" placeholder="Enter case description"></textarea>
+                                <div class="form-group">
+                                    <label asp-for="Description" class="control-label"></label>
+                                    <textarea asp-for="Description" class="form-control"></textarea>
                                     <span asp-validation-for="Description" class="text-danger"></span>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label asp-for="Status" class="form-label">Status</label>
-                                        <select asp-for="Status" class="form-select">
-                                            <option value="Open">Open</option>
-                                            <option value="In Progress">In Progress</option>
-                                            <option value="Closed">Closed</option>
-                                        </select>
-                                        <span asp-validation-for="Status" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="col-md-6 mb-3">
-                                        <label asp-for="Priority" class="form-label">Priority</label>
-                                        <select asp-for="Priority" class="form-select">
-                                            <option value="Low">Low</option>
-                                            <option value="Medium">Medium</option>
-                                            <option value="High">High</option>
-                                        </select>
-                                        <span asp-validation-for="Priority" class="text-danger"></span>
-                                    </div>
+                                <div class="form-group">
+                                    <label asp-for="Status" class="control-label"></label>
+                                    <select asp-for="Status" class="form-control">
+                                        <option value="Open">Open</option>
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Closed">Closed</option>
+                                    </select>
+                                    <span asp-validation-for="Status" class="text-danger"></span>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label asp-for="Location" class="form-label">Location</label>
-                                    <input asp-for="Location" class="form-control" placeholder="Enter case location" />
+                                <div class="form-group">
+                                    <label asp-for="Priority" class="control-label"></label>
+                                    <select asp-for="Priority" class="form-control">
+                                        <option value="Low">Low</option>
+                                        <option value="Medium">Medium</option>
+                                        <option value="High">High</option>
+                                    </select>
+                                    <span asp-validation-for="Priority" class="text-danger"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="Location" class="control-label"></label>
+                                    <input asp-for="Location" class="form-control" />
                                     <span asp-validation-for="Location" class="text-danger"></span>
                                 </div>
 
-                                @if (canAssignTeams)
-                                {
-                                    <div class="mb-3">
-                                        <label class="form-label">Assign Teams</label>
-                                        <select name="selectedTeams" class="form-select" multiple>
-                                            @foreach (var team in ViewBag.Teams)
-                                            {
-                                                var isSelected = ((List<Guid>)ViewBag.SelectedTeams)?.Contains(team.Id) ?? false;
-                                                <option value="@team.Id" selected="@isSelected">@team.Name</option>
-                                            }
-                                        </select>
-                                    </div>
-                                }
-                                <div class="text-end mt-4">
-                                    <button type="submit" class="btn btn-primary">Update Case Details</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Criminal Information Tab -->
-                        <div class="tab-pane fade" id="criminal-info" role="tabpanel">
-                            <form asp-action="UpdateCriminalInfo" method="post">
-                                <input type="hidden" asp-for="Id" />
-                                <div class="criminal-container">
-                                    @{
-                                        var caseCriminalsList = Model.CaseCriminals.ToList();
-                                        for (var i = 0; i < caseCriminalsList.Count; i++)
+                                <div class="form-group">
+                                    <label class="control-label">Teams</label>
+                                    <select asp-for="SelectedTeams" class="form-control" multiple>
+                                        @foreach (var team in ViewBag.Teams)
                                         {
-                                            var criminal = caseCriminalsList[i];
-                                            <div class="criminal-item mb-3">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Select Criminal</label>
-                                                    <select name="Criminals[@i].CriminalId" class="form-select">
-                                                        <option value="">Select a criminal...</option>
-                                                        @foreach (var c in ViewBag.Criminals)
-                                                        {
-                                                            <option value="@c.Id" selected="@(criminal.CriminalId == c.Id)">@c.Name</option>
-                                                        }
-                                                    </select>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Role</label>
-                                                    <select name="Criminals[@i].Role" class="form-select">
-                                                        <option value="Suspect" selected="@(criminal.Role == "Suspect")">Suspect</option>
-                                                        <option value="Accomplice" selected="@(criminal.Role == "Accomplice")">Accomplice</option>
-                                                        <option value="Mastermind" selected="@(criminal.Role == "Mastermind")">Mastermind</option>
-                                                    </select>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Notes</label>
-                                                    <textarea name="Criminals[@i].Notes" class="form-control" rows="2" placeholder="Enter notes about the criminal's involvement">@criminal.Notes</textarea>
-                                                </div>
-                                            </div>
+                                            <option value="@team.Id">@team.Name</option>
                                         }
-                                    }
+                                    </select>
                                 </div>
-                                <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addCriminalField()">Add Another Criminal</button>
-                                <div class="text-end mt-4">
-                                    <button type="submit" class="btn btn-primary">Update Criminal Information</button>
+
+                                <div class="form-group">
+                                    <label class="control-label">Created Date</label>
+                                    <input type="text" class="form-control" value="@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")" readonly />
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="control-label">Last Updated</label>
+                                    <input type="text" class="form-control" value="@Model.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")" readonly />
+                                </div>
+
+                                <div class="form-group">
+                                    <input type="submit" value="Save Changes" class="btn btn-primary" />
+                                    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
                                 </div>
                             </form>
                         </div>
 
-                        <!-- Evidence Tab -->
-                        <div class="tab-pane fade" id="evidence-info" role="tabpanel">
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label asp-for="Evidences" class="form-label">Evidence Files</label>
-                                    <input asp-for="Evidences" type="file" class="form-control" multiple />
-                                    <span asp-validation-for="Evidences" class="text-danger"></span>
-                                </div>
+                        <div class="tab-pane fade" id="criminals" role="tabpanel">
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCriminalModal">
+                                    Add Criminal
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Notes</th>
+                                            <th>Role</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.Criminals != null)
+                                        {
+                                            @foreach (var criminal in Model.Criminals)
+                                            {
+                                                <tr>
+                                                    
+                                                    <td>@criminal.Name</td>
+                                                    <td>@criminal.Notes</td>
+                                                    <td>@criminal.Role</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-primary btn-sm" onclick="editCriminal('@criminal.Id')">
+                                                            <i class="fas fa-edit"></i> Edit
+                                                        </button>
+                                                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteCriminal('@criminal.Id')">
+                                                            <i class="fas fa-trash"></i> Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <!-- Witnesses Tab -->
-                        <div class="tab-pane fade" id="witness-info" role="tabpanel">
-                            <form asp-action="UpdateWitness" method="post">
-                                <input type="hidden" asp-for="Id" />
-                                <div class="witness-container">
-                                    @{
-                                        var witnessesList = Model.Witnesses.ToList();
-                                        for (var i = 0; i < witnessesList.Count; i++)
+                        <div class="tab-pane fade" id="evidence" role="tabpanel">
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEvidenceModal">
+                                    Add Evidence
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Collection Date</th>
+                                            <th>Location</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var evidence in Model.Evidences)
                                         {
-                                            var witness = witnessesList[i];
-                                            <div class="witness-item mb-3">
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Name</label>
-                                                        <input type="text" name="Witnesses[@i].Name" class="form-control" value="@witness.Name" placeholder="Enter witness name" />
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Contact Number</label>
-                                                        <input type="text" name="Witnesses[@i].ContactNumber" class="form-control" value="@witness.ContactNumber" placeholder="Enter contact number" />
-                                                    </div>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Statement</label>
-                                                    <textarea name="Witnesses[@i].Statement" class="form-control" rows="2" placeholder="Enter witness statement">@witness.Statement</textarea>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <div class="form-check">
-                                                        <input type="checkbox" name="Witnesses[@i].IsAnonymous" class="form-check-input" checked="@witness.IsAnonymous" />
-                                                        <label class="form-check-label">Anonymous Witness</label>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <tr>
+                                                <td>@evidence.Description</td>
+                                                <td>@evidence.CollectionDate.ToString("yyyy-MM-dd")</td>
+                                                <td>@evidence.StorageLocation</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-info" onclick="editEvidence(@evidence.Id)">Edit</button>
+                                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteEvidence(@evidence.Id)">Delete</button>
+                                                </td>
+                                            </tr>
                                         }
-                                    }
-                                        }
-                                    }
-                                </div>
-                                <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addWitnessField()">Add Another Witness</button>
-                                <div class="text-end mt-4">
-                                    <button type="submit" class="btn btn-primary">Update Witness</button>
-                                </div>
-                            </form>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
-                        <!-- Victims Tab -->
-                        <div class="tab-pane fade" id="victim-info" role="tabpanel">
-                            <form asp-action="UpdateVictim" method="post">
-                                <input type="hidden" asp-for="Id" />
-                                <div class="victim-container">
-                                    @{
-                                        var victimsList = Model.Victims.ToList();
-                                        for (var i = 0; i < victimsList.Count; i++)
+                        <div class="tab-pane fade" id="witnesses" role="tabpanel">
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addWitnessModal">
+                                    Add Witness
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Contact</th>
+                                            <th>Statement</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var witness in Model.Witnesses)
                                         {
-                                            var victim = victimsList[i];
-                                            <div class="victim-item mb-3">
-                                                <div class="row">
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Name</label>
-                                                        <input type="text" name="Victims[@i].Name" class="form-control" value="@victim.Name" placeholder="Enter victim name" />
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <label class="form-label">Contact Number</label>
-                                                        <input type="text" name="Victims[@i].ContactNumber" class="form-control" value="@victim.ContactNumber" placeholder="Enter contact number" />
-                                                    </div>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Description</label>
-                                                    <textarea name="Victims[@i].Description" class="form-control" rows="2" placeholder="Enter victim description">@victim.Description</textarea>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label class="form-label">Injury Severity</label>
-                                                    <select name="Victims[@i].InjurySeverity" class="form-select">
-                                                        <option value="Minor" selected="@(victim.InjurySeverity == "Minor")">Minor</option>
-                                                        <option value="Moderate" selected="@(victim.InjurySeverity == "Moderate")">Moderate</option>
-                                                        <option value="Severe" selected="@(victim.InjurySeverity == "Severe")">Severe</option>
-                                                        <option value="Critical" selected="@(victim.InjurySeverity == "Critical")">Critical</option>
-                                                        <option value="Fatal" selected="@(victim.InjurySeverity == "Fatal")">Fatal</option>
-                                                    </select>
-                                                </div>
-                                            </div>
+                                            <tr>
+                                                <td>@witness.Name</td>
+                                                <td>@witness.ContactNumber</td>
+                                                <td>@witness.Statement</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-info" onclick="editWitness(@witness.Id)">Edit</button>
+                                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteWitness(@witness.Id)">Delete</button>
+                                                </td>
+                                            </tr>
                                         }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="victims" role="tabpanel">
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVictimModal">
+                                    Add Victim
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Contact</th>
+                                            <th>Incident Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var victim in Model.Victims)
+                                        {
+                                            <tr>
+                                                <td>@victim.Name</td>
+                                                <td>@victim.ContactNumber</td>
+                                                <td>@victim.IncidentDate.ToString("yyyy-MM-dd")</td>
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-info" onclick="editVictim(@victim.Id)">Edit</button>
+                                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteVictim(@victim.Id)">Delete</button>
+                                                </td>
+                                            </tr>
                                         }
-                                    }
-                                </div>
-                                <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addVictimField()">Add Another Victim</button>
-                                <div class="text-end mt-4">
-                                    <button type="submit" class="btn btn-primary">Update Victim</button>
-                                </div>
-                            </form>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="suspects" role="tabpanel">
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSuspectModal">
+                                    Add Suspect
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th>Last Seen Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var suspect in Model.Suspects)
+                                        {
+                                            <tr>
+                                                <td>@suspect.Name</td>
+                                                <td>@suspect.Description</td>
+                                                @* <td>@suspect.Dat.ToString("yyyy-MM-dd")</td> *@
+                                                <td>
+                                                    <button type="button" class="btn btn-sm btn-info" onclick="editSuspect(@suspect.Id)">Edit</button>
+                                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteSuspect(@suspect.Id)">Delete</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -276,161 +289,376 @@
         </div>
     </div>
 </div>
+@foreach (var evidence in Model.Evidences)
+{
+    @await Html.PartialAsync("_EvidenceModalPartial", evidence)
+}
+@foreach (var witness in Model.Witnesses) // Make sure this is List<EditWitnessViewModel>
+{
+    @await Html.PartialAsync("_WitnessModalPartial", witness)
+}
+@foreach (var victim in Model.Victims) // Make sure this is List<EditVictimViewModel>
+{
+    @await Html.PartialAsync("_VictimModalPartial", victim)
+}
+@foreach (var suspect in Model.Suspects)
+{
+    @await Html.PartialAsync("_SuspectModalPartial", suspect)
+}
+@foreach (var criminal in Model.Criminals)
+{
+    @await Html.PartialAsync("_CriminalModalPartial", criminal)
+}
+@await Html.PartialAsync("_AddCriminalModalPartial", new CRMS.Models.EditModel.EditCriminalViewModel { CaseId = Model.Id })
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-        function addCriminalField() {
-            const container = document.querySelector('.criminal-container');
-            const index = container.children.length;
-            const template = `
-                <div class="criminal-item mb-3">
-                    <div class="mb-3">
-                        <label class="form-label">Select Criminal</label>
-                        <select name="Criminals[${index}].CriminalId" class="form-select">
-                            <option value="">Select a criminal...</option>
-                            @foreach (var criminal in ViewBag.Criminals)
-                            {
-                                <option value="@criminal.Id">@criminal.Name</option>
+        // Common function to handle form submissions
+        function handleFormSubmit(formId, url, modalId, successCallback) {
+            $(formId).submit(function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (result) {
+                        if (result.success) {
+                            var modalElement = document.querySelector(modalId);
+                            var modalInstance = bootstrap.Modal.getInstance(modalElement);
+                            if (modalInstance) {
+                                modalInstance.hide();
                             }
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Role</label>
-                        <select name="Criminals[${index}].Role" class="form-select">
-                            <option value="Suspect">Suspect</option>
-                            <option value="Accomplice">Accomplice</option>
-                            <option value="Mastermind">Mastermind</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Notes</label>
-                        <textarea name="Criminals[${index}].Notes" class="form-control" rows="2" placeholder="Enter notes about the criminal's involvement"></textarea>
-                    </div>
-                </div>`;
-            container.insertAdjacentHTML('beforeend', template);
+                            successCallback(result);
+                            toastr.success('Operation completed successfully');
+                        } else {
+                            toastr.error(result.message || 'An error occurred');
+                        }
+                    },
+                    error: function () {
+                        toastr.error('An error occurred while processing your request');
+                    }
+                });
+            });
         }
 
-        function addSuspectField() {
-            const container = document.querySelector('.suspect-container');
-            const index = container.children.length;
-            const template = `
-                <div class="suspect-item mb-3">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Name</label>
-                            <input type="text" name="Suspects[${index}].Name" class="form-control" placeholder="Enter suspect name" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Last Known Location</label>
-                            <input type="text" name="Suspects[${index}].LastKnownLocation" class="form-control" placeholder="Enter location" />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea name="Suspects[${index}].Description" class="form-control" rows="2" placeholder="Enter description"></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Possible Motives</label>
-                            <input type="text" name="Suspects[${index}].PossibleMotives" class="form-control" placeholder="Enter motives" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Relationship to Victim</label>
-                            <input type="text" name="Suspects[${index}].RelationshipToVictim" class="form-control" placeholder="Enter relationship" />
-                        </div>
-                    </div>
-                </div>`;
-            container.insertAdjacentHTML('beforeend', template);
+        // Common function to handle deletions
+        function handleDelete(url, id, successCallback) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                $.ajax({
+                    url: url + '/' + id,
+                    type: 'POST',
+                    data: { id: id },
+                    success: function (result) {
+                        if (result.success) {
+                            successCallback();
+                            toastr.success('Item deleted successfully');
+                        } else {
+                            toastr.error(result.message || 'An error occurred');
+                        }
+                    },
+                    error: function () {
+                        toastr.error('An error occurred while processing your request');
+                    }
+                });
+            }
         }
 
-        function addEvidenceField() {
-            const container = document.querySelector('.evidence-container');
-            const index = container.children.length;
-            const template = `
-                <div class="evidence-item mb-3">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Title</label>
-                            <input type="text" name="Evidences[${index}].Title" class="form-control" placeholder="Enter evidence title" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Type</label>
-                            <input type="text" name="Evidences[${index}].Type" class="form-control" placeholder="Enter evidence type" />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea name="Evidences[${index}].Description" class="form-control" rows="2" placeholder="Enter evidence description"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Storage Location</label>
-                        <input type="text" name="Evidences[${index}].StorageLocation" class="form-control" placeholder="Enter storage location" />
-                    </div>
-                </div>`;
-            container.insertAdjacentHTML('beforeend', template);
+                // Criminal CRUD operations
+            function editCriminal(criminalId) {
+            $.get('/Case/GetCriminal/' + criminalId, function (data) {
+                if (data) {
+                    console.log("Criminal Data:", data);
+
+                    // Name from Criminal model
+                    $('#editCriminalForm input[name="Name"]').val(data.name);
+
+                    // Other fields from CaseCriminal
+                    $('#editCriminalForm input[name="Id"]').val(data.id);
+                    $('#editCriminalForm input[name="CaseId"]').val(data.caseId);
+                    $('#editCriminalForm input[name="Role"]').val(data.role);
+                    $('#editCriminalForm textarea[name="Notes"]').val(data.notes);
+
+                    // Show the modal
+                    var modal = new bootstrap.Modal(document.getElementById('editCriminalModal'));
+                    modal.show();
+                } else {
+                    console.warn("No data found for the selected criminal.");
+                }
+            }).fail(function (xhr, status, error) {
+                console.error("Error loading criminal:", error);
+                console.error("Response text:", xhr.responseText);
+            });
         }
 
-        function addWitnessField() {
-            const container = document.querySelector('.witness-container');
-            const index = container.children.length;
-            const template = `
-                <div class="witness-item mb-3">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Name</label>
-                            <input type="text" name="Witnesses[${index}].Name" class="form-control" placeholder="Enter witness name" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Contact Number</label>
-                            <input type="text" name="Witnesses[${index}].ContactNumber" class="form-control" placeholder="Enter contact number" />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Statement</label>
-                        <textarea name="Witnesses[${index}].Statement" class="form-control" rows="2" placeholder="Enter witness statement"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input type="checkbox" name="Witnesses[${index}].IsAnonymous" class="form-check-input" />
-                            <label class="form-check-label">Anonymous Witness</label>
-                        </div>
-                    </div>
-                </div>`;
-            container.insertAdjacentHTML('beforeend', template);
+
+        // Handle form submission
+        $('#editCriminalForm').on('submit', function (e) {
+            e.preventDefault();
+            
+            // Get the form data
+            var formData = $(this).serialize();
+            console.log('Submitting form data:', formData);
+
+            // Validate required fields
+            var name = $('input[name="Name"]').val();
+            var age = $('input[name="Age"]').val();
+            var gender = $('select[name="Gender"]').val();
+            var status = $('select[name="Status"]').val();
+            var role = $('input[name="Role"]').val();
+            
+            // Hide all error messages first
+            $('.text-danger').hide();
+            
+            // Validate each required field
+            var isValid = true;
+            if (!name) {
+                $('span[data-valmsg-for="Name"]').show();
+                isValid = false;
+            }
+            if (!age || age < 0 || age > 120) {
+                $('span[data-valmsg-for="Age"]').show();
+                isValid = false;
+            }
+            if (!gender) {
+                $('span[data-valmsg-for="Gender"]').show();
+                isValid = false;
+            }
+            if (!status) {
+                $('span[data-valmsg-for="Status"]').show();
+                isValid = false;
+            }
+            if (!role) {
+                $('span[data-valmsg-for="Role"]').show();
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                return false;
+            }
+
+            $.ajax({
+                url: '/Case/UpdateCriminal',
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    console.log('UpdateCriminal response:', response);
+                    if (response.success) {
+                        toastr.success('Criminal updated successfully');
+                        $('#editCriminalModal').modal('hide');
+                        location.reload(); // Refresh the page to show updated data
+                    } else {
+                        toastr.error(response.message || 'Failed to update criminal');
+                        if (response.errors) {
+                            // Display validation errors
+                            Object.keys(response.errors).forEach(function(key) {
+                                $('span[data-valmsg-for="' + key + '"]').text(response.errors[key]).show();
+                            });
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error updating criminal:', error);
+                    console.error('Response:', xhr.responseText);
+                    toastr.error('An error occurred while updating the criminal');
+                }
+            });
+        });
+
+        function deleteCriminal(id) {
+            handleDelete('/Case/DeleteCriminal', id, function () {
+                location.reload();
+            });
         }
 
-        function addVictimField() {
-            const container = document.querySelector('.victim-container');
-            const index = container.children.length;
-            const template = `
-                <div class="victim-item mb-3">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Name</label>
-                            <input type="text" name="Victims[${index}].Name" class="form-control" placeholder="Enter victim name" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Contact Number</label>
-                            <input type="text" name="Victims[${index}].ContactNumber" class="form-control" placeholder="Enter contact number" />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea name="Victims[${index}].Description" class="form-control" rows="2" placeholder="Enter victim description"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Injury Severity</label>
-                        <select name="Victims[${index}].InjurySeverity" class="form-select">
-                            <option value="Minor">Minor</option>
-                            <option value="Moderate">Moderate</option>
-                            <option value="Severe">Severe</option>
-                            <option value="Critical">Critical</option>
-                            <option value="Fatal">Fatal</option>
-                        </select>
-                    </div>
-                </div>`;
-            container.insertAdjacentHTML('beforeend', template);
+        // Evidence CRUD operations
+        function editEvidence(id) {
+            $.get('/Case/GetEvidence/' + id, function (data) {
+                $('#evidenceForm')[0].reset();
+                $('#evidenceForm').find('[name="Id"]').val(data.id);
+                $('#evidenceForm').find('[name="Description"]').val(data.description);
+                $('#evidenceForm').find('[name="CollectionDate"]').val(data.collectionDate.split('T')[0]);
+                $('#evidenceForm').find('[name="Location"]').val(data.location);
+                $('#evidenceForm').find('[name="Type"]').val(data.type);
+                $('#evidenceForm').find('[name="Status"]').val(data.status);
+                var evidenceModal = new bootstrap.Modal(document.getElementById('addEvidenceModal'));
+                evidenceModal.show();
+            });
         }
+
+        function deleteEvidence(id) {
+            handleDelete('/Case/DeleteEvidence', id, function () {
+                location.reload();
+            });
+        }
+
+        // Witness CRUD operations
+        function editWitness(id) {
+            $.get('/Case/GetWitness/' + id, function (data) {
+                $('#witnessForm')[0].reset();
+                $('#witnessForm').find('[name="Id"]').val(data.id);
+                $('#witnessForm').find('[name="Name"]').val(data.name);
+                $('#witnessForm').find('[name="Contact"]').val(data.contact);
+                $('#witnessForm').find('[name="Statement"]').val(data.statement);
+                $('#witnessForm').find('[name="RelationToCase"]').val(data.relationToCase);
+                $('#witnessForm').find('[name="Status"]').val(data.status);
+                var witnessModal = new bootstrap.Modal(document.getElementById('addWitnessModal'));
+                witnessModal.show();
+            });
+        }
+
+        function deleteWitness(id) {
+            handleDelete('/Case/DeleteWitness', id, function () {
+                location.reload();
+            });
+        }
+
+        // Victim CRUD operations
+        function editVictim(id) {
+            $.get('/Case/GetVictim/' + id, function (data) {
+                $('#victimForm')[0].reset();
+                $('#victimForm').find('[name="Id"]').val(data.id);
+                $('#victimForm').find('[name="Name"]').val(data.name);
+                $('#victimForm').find('[name="Contact"]').val(data.contact);
+                $('#victimForm').find('[name="IncidentDate"]').val(data.incidentDate.split('T')[0]);
+                $('#victimForm').find('[name="Description"]').val(data.description);
+                $('#victimForm').find('[name="InjurySeverity"]').val(data.injurySeverity);
+                $('#victimForm').find('[name="Status"]').val(data.status);
+                var victimModal = new bootstrap.Modal(document.getElementById('addVictimModal'));
+                victimModal.show();
+            });
+        }
+
+        function deleteVictim(id) {
+            handleDelete('/Case/DeleteVictim', id, function () {
+                location.reload();
+            });
+        }
+
+        // Suspect CRUD operations
+        function editSuspect(id) {
+            $.get('/Case/GetSuspect/' + id, function (data) {
+                $('#suspectForm')[0].reset();
+                $('#suspectForm').find('[name="Id"]').val(data.id);
+                $('#suspectForm').find('[name="Name"]').val(data.name);
+                $('#suspectForm').find('[name="Description"]').val(data.description);
+                $('#suspectForm').find('[name="LastSeenDate"]').val(data.lastSeenDate.split('T')[0]);
+                $('#suspectForm').find('[name="LastKnownLocation"]').val(data.lastKnownLocation);
+                $('#suspectForm').find('[name="Status"]').val(data.status);
+                $('#suspectForm').find('[name="ThreatLevel"]').val(data.threatLevel);
+                var suspectModal = new bootstrap.Modal(document.getElementById('addSuspectModal'));
+                suspectModal.show();
+            });
+        }
+
+        function deleteSuspect(id) {
+            handleDelete('/Case/DeleteSuspect', id, function () {
+                location.reload();
+            });
+        }
+
+        // Initialize form handlers
+        $(document).ready(function () {
+            // Initialize Bootstrap 5 modals
+            var modals = document.querySelectorAll('.modal');
+            modals.forEach(function(modalEl) {
+                new bootstrap.Modal(modalEl);
+            });
+            
+            // Load criminals when Add Criminal modal is shown
+        $('#addCriminalModal').on('show.bs.modal', function () {
+            // Clear previous selections
+            $('#existingCriminalSelect').empty();
+            $('#existingCriminalSelect').append('<option value="">-- Select a Criminal --</option>');
+
+            // Make sure the CaseId is set correctly in the forms
+            var caseId = $('#Id').val();
+            $('#existingCriminalForm [name="CaseId"]').val(caseId);
+
+            // Fetch criminals from API
+            $.ajax({
+                url: '/api/CriminalApi',
+                type: 'GET',
+                success: function(response) {
+                    if (response && response.data) {
+                        response.data.forEach(function(criminal) {
+                            $('#existingCriminalSelect').append('<option value="' + criminal.id + '">' + criminal.name + '</option>');
+                        });
+                    } else {
+                        toastr.warning('No criminals found.');
+                    }
+                },
+                error: function() {
+                    toastr.error('Failed to load criminals list');
+                }
+            });
+        });
+
+        // Handle Existing Criminal form submission
+        $('#saveExistingCriminal').on('click', function () {
+            $('#existingCriminalForm').submit(); // Manually trigger form submission
+        });
+
+        $('#existingCriminalForm').submit(function(e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            console.log('Submitting existing criminal form:', formData);
+
+            // Validate that a criminal is selected
+            var selectedCriminal = $('#existingCriminalSelect').val();
+            if (!selectedCriminal) {
+                $('#existingCriminalSelectError').show();
+                return false;
+            }
+            $('#existingCriminalSelectError').hide();
+
+            // Validate that role is provided
+            var role = $('input[name="Role"]').val();
+            if (!role) {
+                $('#roleError').show();
+                return false;
+            }
+            $('#roleError').hide();
+
+            $.ajax({
+                url: '/Case/AddCriminal',
+                type: 'POST',
+                data: formData,
+                success: function(result) {
+                    console.log('AddCriminal response:', result);
+                    if (result.success) {
+                        $('#addCriminalModal').modal('hide');
+                        location.reload(); // Reload the page to reflect changes
+                    } else {
+                        toastr.error(result.message || 'Failed to add criminal');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error adding criminal:', error);
+                    console.error('Response:', xhr.responseText);
+                    toastr.error('An error occurred while adding the criminal');
+                }
+            });
+        });
+
+
+            // Handle New Criminal form submission
+            
+            handleFormSubmit('#evidenceForm', '/Case/AddEvidence', '#addEvidenceModal', function () {
+                location.reload();
+            });
+
+            handleFormSubmit('#witnessForm', '/Case/AddWitness', '#addWitnessModal', function () {
+                location.reload();
+            });
+
+            handleFormSubmit('#victimForm', '/Case/AddVictim', '#addVictimModal', function () {
+                location.reload();
+            });
+
+            handleFormSubmit('#suspectForm', '/Case/AddSuspect', '#addSuspectModal', function () {
+                location.reload();
+            });
+        });
     </script>
 }

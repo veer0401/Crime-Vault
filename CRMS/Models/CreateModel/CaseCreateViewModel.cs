@@ -7,8 +7,32 @@ namespace CRMS.Models.CreateModel
 {
     public class CaseCreateViewModel
     {
+        public CaseCreateViewModel()
+        {
+            Case = new Case
+            {
+                Title = string.Empty,
+                Description = string.Empty,
+                Status = "Open",
+                Priority = "Medium",
+                Location = string.Empty
+            };
+            SelectedTeams = new List<int>();
+            
+            // Initialize collections with at least one item
+            Criminals = new List<Criminal> { new Criminal() };
+            Evidences = new List<EvidenceViewModel> { new EvidenceViewModel() };
+            Witnesses = new List<Witness> { new Witness() };
+            Victims = new List<Victim> { new Victim() };
+            Suspects = new List<Suspect> { new Suspect() };
+        }
+
+        public Guid Id { get; set; }
+
+        public Case Case { get; set; }
+
         // CASE DETAILS
-        [Required]
+        [Required(ErrorMessage = "Title is required")]
         public string Title { get; set; }
 
         public string Description { get; set; }
@@ -22,28 +46,18 @@ namespace CRMS.Models.CreateModel
         public List<int> SelectedTeams { get; set; }
 
         // CRIMINALS
-        public List<Criminal> Criminals { get; set; } = new List<Criminal>();
+        public List<Criminal> Criminals { get; set; }
 
         // EVIDENCE
-        public List<EvidenceViewModel> Evidences { get; set; } = new List<EvidenceViewModel>();
+        public List<EvidenceViewModel> Evidences { get; set; }
 
         // WITNESSES
-        public List<Witness> Witnesses { get; set; } = new List<Witness>();
+        public List<Witness> Witnesses { get; set; }
 
         // VICTIMS
-        public List<Victim> Victims { get; set; } = new List<Victim>();
+        public List<Victim> Victims { get; set; }
 
         // SUSPECTS
-        public List<Suspect> Suspects { get; set; } = new List<Suspect>();
-    }
-
-    public class EvidenceViewModel
-    {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Type { get; set; }
-        public string StorageLocation { get; set; }
-        public DateTime? CollectionDate { get; set; }
-        public IFormFile FileUpload { get; set; }
+        public List<Suspect> Suspects { get; set; }
     }
 }

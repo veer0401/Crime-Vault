@@ -4,14 +4,15 @@ namespace CRMS.Models
 {
     public class CaseCriminal
     {
+        public Guid Id { get; set; } = Guid.NewGuid();
         public Guid CaseId { get; set; }
-        public Case Case { get; set; } = null!;
-
         public Guid CriminalId { get; set; }
-        public Criminal Criminal { get; set; } = null!;
+        public string Role { get; set; } = string.Empty;
+        public string Notes { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public string Role { get; set; } = "Suspect";
-        public DateTime AddedDate { get; set; } = DateTime.Now;
-        public string? Notes { get; set; }
+        // Navigation properties
+        public Case Case { get; set; }
+        public Criminal Criminal { get; set; }
     }
 }

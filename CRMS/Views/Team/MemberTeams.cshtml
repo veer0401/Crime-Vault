@@ -34,6 +34,11 @@
                             </div>
                             <p class="mb-0">Team Code: @team.TeamCode</p>
                         </div>
+                        <div class="d-flex justify-content-between mt-3">
+                            <a asp-controller="TeamMessage" asp-action="Index" asp-route-teamId="@team.Id" class="btn btn-primary">
+                                <i class="ti ti-message-circle me-1"></i> Chat
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

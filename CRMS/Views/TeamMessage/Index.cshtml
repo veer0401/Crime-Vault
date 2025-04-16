@@ -1,0 +1,312 @@
+@using Microsoft.AspNetCore.Identity
+@model IEnumerable<CRMS.Models.TeamMessage>
+@inject UserManager<CRMS.Models.Users> UserManager
+@{
+    ViewData["Title"] = "Team Chat";
+    var userTeams = ViewBag.UserTeams as List<CRMS.Models.Team>;
+    var currentUser = await UserManager.GetUserAsync(User);
+}
+
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.css" />
+}
+
+@section VendorScripts {
+    <script src="~/vendor/libs/bootstrap-maxlength/bootstrap-maxlength.js"></script>
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/vendor/css/pages/app-chat.css">
+    <style>
+        .chat-messages {
+            padding: 1rem;
+        }
+
+        .chat-message {
+            margin-bottom: 1rem;
+        }
+
+        .chat-message-left {
+            margin-right: auto;
+            max-width: 70%;
+        }
+
+        .chat-message-right {
+            margin-left: auto;
+            max-width: 70%;
+        }
+
+        .chat-message-wrapper {
+            background-color: #f5f5f5;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+        }
+
+        .chat-message-right .chat-message-wrapper {
+            background-color: #e3f2fd;
+        }
+
+        .list-group-item.active {
+            background-color: #e3f2fd;
+            border-color: #e3f2fd;
+            color: #0d6efd;
+        }
+
+        .avatar-initial {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+    </style>
+}
+
+@section PageScripts {
+    <script src="~/js/app-chat.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Scroll to bottom of chat
+            var chatMessages = document.querySelector('.chat-messages');
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Handle message form submission
+            $('.form-send-message').on('submit', function(e) {
+                e.preventDefault();
+                
+                var form = $(this);
+                var contentInput = form.find('input[name="content"]');
+                var content = contentInput.val().trim();
+                var teamId = form.find('input[name="teamId"]').val();
+
+                if (!content) {
+                    alert('Please enter a message');
+                    contentInput.focus();
+                    return;
+                }
+
+                if (!teamId) {
+                    alert('No team selected');
+                    return;
+                }
+
+                // Disable the form while submitting
+                form.find('input, button').prop('disabled', true);
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: {
+                        teamId: teamId,
+                        content: content
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Clear the input and re-enable the form
+                            contentInput.val('');
+                            form.find('input, button').prop('disabled', false);
+                            // Reload the page to show the new message
+                            window.location.reload();
+                        } else {
+                            alert(response.message || 'Error sending message');
+                            form.find('input, button').prop('disabled', false);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error sending message:', error);
+                        alert('Error sending message. Please try again.');
+                        form.find('input, button').prop('disabled', false);
+                    }
+                });
+            });
+
+            // Handle Enter key press in message input
+            $('.message-input').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    e.preventDefault();
+                    $(this).closest('form').submit();
+                }
+            });
+        });
+    </script>
+}
+
+<div class="app-chat card overflow-hidden">
+    <div class="row g-0">
+        <!-- Sidebar Left -->
+        <div class="col app-chat-sidebar-left app-sidebar overflow-hidden" id="app-chat-sidebar-left">
+            <div class="chat-sidebar-left-user sidebar-header d-flex flex-column justify-content-center align-items-center flex-wrap px-6 pt-12">
+                <div class="avatar avatar-xl avatar-online chat-sidebar-avatar">
+                    <span class="avatar-initial rounded-circle bg-label-primary">@currentUser.FullName[0]</span>
+                </div>
+                <h5 class="mt-4 mb-0">@currentUser.FullName</h5>
+                <span>Team Member</span>
+                <i class="ti ti-x ti-lg cursor-pointer close-sidebar" data-bs-toggle="sidebar" data-overlay data-target="#app-chat-sidebar-left"></i>
+            </div>
+            <div class="sidebar-body px-6 pb-6">
+                <div class="my-6">
+                    <label for="chat-sidebar-left-user-about" class="text-uppercase text-muted mb-1">About</label>
+                    <textarea id="chat-sidebar-left-user-about" class="form-control chat-sidebar-left-user-about" rows="3" maxlength="120">Team member of @(ViewBag.SelectedTeamId != null ? userTeams.FirstOrDefault(t => t.Id == ViewBag.SelectedTeamId)?.Name : "No team selected")</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat & Contacts -->
+        <div class="col app-chat-contacts app-sidebar flex-grow-0 overflow-hidden border-end" id="app-chat-contacts">
+            <div class="sidebar-header h-px-75 px-5 border-bottom d-flex align-items-center">
+                <div class="d-flex align-items-center me-6 me-lg-0">
+                    <div class="flex-shrink-0 avatar avatar-online me-4" data-bs-toggle="sidebar" data-overlay="app-overlay-ex" data-target="#app-chat-sidebar-left">
+                        <span class="avatar-initial rounded-circle bg-label-primary">@currentUser.FullName[0]</span>
+                    </div>
+                    <div class="flex-grow-1 input-group input-group-merge">
+                        <span class="input-group-text" id="basic-addon-search31"><i class="ti ti-search"></i></span>
+                        <input type="text" class="form-control chat-search-input" placeholder="Search teams..." aria-label="Search..." aria-describedby="basic-addon-search31">
+                    </div>
+                </div>
+                <i class="ti ti-x ti-lg cursor-pointer position-absolute top-50 end-0 translate-middle d-lg-none d-block" data-overlay data-bs-toggle="sidebar" data-target="#app-chat-contacts"></i>
+            </div>
+            <div class="sidebar-body">
+                <!-- Teams List -->
+                <ul class="list-unstyled chat-contact-list py-2 mb-0" id="team-list">
+                    <li class="chat-contact-list-item chat-contact-list-item-title mt-0">
+                        <h5 class="text-primary mb-0">My Teams</h5>
+                    </li>
+                    @if (userTeams == null || !userTeams.Any())
+                    {
+                        <li class="chat-contact-list-item chat-list-item-0">
+                            <h6 class="text-muted mb-0">No Teams Found</h6>
+                        </li>
+                    }
+                    else
+                    {
+                        @foreach (var team in userTeams)
+                        {
+                            <li class="chat-contact-list-item @(ViewBag.SelectedTeamId == team.Id ? "active" : "") mb-1">
+                                <a asp-action="Index" asp-route-teamId="@team.Id" class="d-flex align-items-center">
+                                    <div class="flex-shrink-0 avatar avatar-online">
+                                        <span class="avatar-initial rounded-circle bg-label-primary">@team.Name[0]</span>
+                                    </div>
+                                    <div class="chat-contact-info flex-grow-1 ms-4">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h6 class="chat-contact-name text-truncate m-0 fw-normal">@team.Name</h6>
+                                            <small class="text-muted">@team.TeamMembers.Count members</small>
+                                        </div>
+                                        <small class="chat-contact-status text-truncate">Leader: @team.TeamLeader.FullName</small>
+                                    </div>
+                                </a>
+                            </li>
+                        }
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Chat History -->
+        <div class="col app-chat-history">
+            @if (ViewBag.SelectedTeamId == null)
+            {
+                <div class="chat-history-wrapper d-flex align-items-center justify-content-center h-100">
+                    <div class="text-center">
+                        <div class="avatar avatar-xl mb-3">
+                            <span class="avatar-initial rounded-circle bg-label-primary">
+                                <i class="ti ti-message-circle ti-lg"></i>
+                            </span>
+                        </div>
+                        <h4>Select a team to start chatting</h4>
+                        <p class="text-muted">Choose a team from the sidebar to view and send messages</p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                var team = userTeams.FirstOrDefault(t => t.Id == ViewBag.SelectedTeamId);
+                <div class="chat-history-wrapper">
+                    <div class="chat-history-header border-bottom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex overflow-hidden align-items-center">
+                                <i class="ti ti-menu-2 ti-lg cursor-pointer d-lg-none d-block me-4" data-bs-toggle="sidebar" data-overlay data-target="#app-chat-contacts"></i>
+                                <div class="flex-shrink-0 avatar avatar-online">
+                                    <span class="avatar-initial rounded-circle bg-label-primary">@team.Name[0]</span>
+                                </div>
+                                <div class="chat-contact-info flex-grow-1 ms-4">
+                                    <h6 class="m-0 fw-normal">@team.Name</h6>
+                                    <small class="user-status text-body">Team Leader: @team.TeamLeader.FullName</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-icon btn-text-secondary text-secondary rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="true" id="chat-header-actions">
+                                        <i class="ti ti-dots-vertical ti-md"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="chat-header-actions">
+                                        <a class="dropdown-item" href="javascript:void(0);">View Team Details</a>
+                                        <a class="dropdown-item" href="javascript:void(0);">Mute Notifications</a>
+                                        <a class="dropdown-item" href="javascript:void(0);">Clear Chat</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-history-body">
+                        <ul class="list-unstyled chat-history">
+                            @foreach (var message in Model)
+                            {
+                                <li class="chat-message @(message.SenderId == currentUser.Id ? "chat-message-right" : "")">
+                                    <div class="d-flex overflow-hidden">
+                                        @if (message.SenderId != currentUser.Id)
+                                        {
+                                            <div class="user-avatar flex-shrink-0 me-4">
+                                                <div class="avatar avatar-sm">
+                                                    <span class="avatar-initial rounded-circle bg-label-primary">@message.Sender.FullName[0]</span>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="chat-message-wrapper flex-grow-1">
+                                            <div class="chat-message-text">
+                                                <p class="mb-0">@message.Content</p>
+                                            </div>
+                                            <div class="@(message.SenderId == currentUser.Id ? "text-end" : "") text-muted mt-1">
+                                                @if (message.SenderId == currentUser.Id)
+                                                {
+                                                    <i class='ti ti-checks ti-16px text-success me-1'></i>
+                                                }
+                                                <small>@message.SentAt.ToString("h:mm tt")</small>
+                                            </div>
+                                        </div>
+                                        @if (message.SenderId == currentUser.Id)
+                                        {
+                                            <div class="user-avatar flex-shrink-0 ms-4">
+                                                <div class="avatar avatar-sm">
+                                                    <span class="avatar-initial rounded-circle bg-label-primary">@currentUser.FullName[0]</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <!-- Chat message form -->
+                    <div class="chat-history-footer shadow-xs">
+                        <form asp-action="SendMessage" method="post" class="form-send-message d-flex justify-content-between align-items-center">
+                            <input type="hidden" name="teamId" value="@ViewBag.SelectedTeamId" />
+                            <input type="text" name="content" class="form-control message-input border-0 me-4 shadow-none" placeholder="Type your message here..." required>
+                            <div class="message-actions d-flex align-items-center">
+                                <button type="submit" class="btn btn-primary d-flex send-msg-btn">
+                                    <span class="align-middle d-md-inline-block d-none">Send</span>
+                                    <i class="ti ti-send ti-16px ms-md-2 ms-0"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="app-overlay"></div>
+    </div>
+</div> 

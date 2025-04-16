@@ -1,12 +1,11 @@
 @model CRMS.Models.CreateModel.CaseCreateViewModel
-@* @model CRMS.Models.CreateModel.CaseCreateViewModel *@
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<Users> UserManager
 @{
     ViewData["Title"] = "Create Case";
     Layout = "_ContentNavbarLayout";
     var currentUser = await UserManager.GetUserAsync(User);
-    var userRoles = await UserManager.GetRolesAsync(currentUser);
+    var userRoles = currentUser != null ? await UserManager.GetRolesAsync(currentUser) : new List<string>();
     var canAssignTeams = userRoles.Contains("Warden") || userRoles.Contains("Sentinel Prime");
 }
 
@@ -14,543 +13,80 @@
     <h4 class="py-3 mb-4">Create New Case</h4>
 
     <div class="card">
-        <div class="card-header">
-            <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#case-details" role="tab">Case Details</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#criminal-info" role="tab">Criminal Info</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#evidence-info" role="tab">Evidence</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#witness-info" role="tab">Witnesses</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#victim-info" role="tab">Victims</button></li>
-                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#suspect-info" role="tab">Suspects</button></li>
-            </ul>
-        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label">Title</label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
 
-        <div class="card-body tab-content">
-            <!-- CASE DETAILS -->
-            <div class="tab-pane fade show active" id="case-details" role="tabpanel">
-                <form asp-action="CreateCaseDetails" method="post">
-                    <div class="mb-3">
-                        <label asp-for="Title" class="form-label">Title</label>
-                        <input asp-for="Title" class="form-control" />
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="Description" class="form-label">Description</label>
-                        <textarea asp-for="Description" class="form-control"></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Status" class="form-label">Status</label>
-                            <select asp-for="Status" class="form-select">
-                                <option>Open</option><option>In Progress</option><option>Closed</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Priority" class="form-label">Priority</label>
-                            <select asp-for="Priority" class="form-select">
-                                <option>Low</option><option>Medium</option><option>High</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="Location" class="form-label">Location</label>
-                        <input asp-for="Location" class="form-control" />
-                    </div>
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <textarea asp-for="Description" class="form-control"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
 
-                    @if (canAssignTeams)
-                    {
-                        <div class="mb-3">
-                            <label class="form-label">Assign Teams</label>
-                            <select name="selectedTeams" class="form-select" multiple>
+                <div class="mb-3">
+                    <label asp-for="Status" class="form-label">Status</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="Open">Open</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Priority" class="form-label">Priority</label>
+                    <select asp-for="Priority" class="form-select">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                    <span asp-validation-for="Priority" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Location" class="form-label">Location</label>
+                    <input asp-for="Location" class="form-control" />
+                    <span asp-validation-for="Location" class="text-danger"></span>
+                </div>
+
+                @if (canAssignTeams)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">Assign Teams</label>
+                        <select asp-for="SelectedTeams" class="form-select" multiple>
+                            @if (ViewBag.Teams != null)
+                            {
                                 @foreach (var team in ViewBag.Teams)
                                 {
                                     <option value="@team.Id">@team.Name</option>
                                 }
-                            </select>
-                        </div>
-                    }
-
-                    <div class="text-end">
-                        <button type="submit" class="btn btn-primary">Create Case Details</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- CRIMINAL INFO TAB -->
-            <div class="tab-pane fade" id="criminal-info" role="tabpanel">
-                <form asp-action="CreateCriminalInfo" method="post">
-                    <input type="hidden" name="caseId" value="@TempData["CaseId"]" />
-                    <div class="mb-4">
-                        <a href="/Criminal/Add" class="btn btn-success mb-3">Register New Criminal</a>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">Select Criminals</label>
-                        <select name="selectedCriminals" class="form-select" multiple>
-                            @foreach (var criminal in ViewBag.Criminals)
-                            {
-                                <option value="@criminal.Id">@criminal.Name (@criminal.Alias) - @criminal.Status</option>
                             }
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Role</label>
-                        <input type="text" name="criminals[0].Role" class="form-control" value="Suspect" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Added Date</label>
-                        <input type="datetime-local" name="criminals[0].AddedDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Notes</label>
-                        <textarea name="criminals[0].Notes" class="form-control" rows="3"></textarea>
-                    </div>
-                    <div class="text-end">
-                        <button type="submit" class="btn btn-primary">Add Selected Criminals</button>
-                    </div>
-                </form>
-            </div>
-<!-- EVIDENCE INFO TAB -->
-            <div class="tab-pane fade" id="evidence-info" role="tabpanel">
-                <form asp-action="CreateEvidence" method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="caseId" value="@TempData["CaseId"]" />
-                    <div class="evidence-container">
-                        <div class="evidence-item mb-3">
-                            <div class="mb-3"><label asp-for="Evidences[0].Title">Title</label><input asp-for="Evidences[0].Title" class="form-control" /></div>
-                            <div class="mb-3"><label asp-for="Evidences[0].Description">Description</label><textarea asp-for="Evidences[0].Description" class="form-control"></textarea></div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3"><label asp-for="Evidences[0].Type">Type</label><input asp-for="Evidences[0].Type" class="form-control" /></div>
-                                <div class="col-md-6 mb-3"><label asp-for="Evidences[0].StorageLocation">Storage Location</label><input asp-for="Evidences[0].StorageLocation" class="form-control" /></div>
-                            </div>
-                            <div class="mb-3"><label asp-for="Evidences[0].CollectionDate">Collection Date</label><input asp-for="Evidences[0].CollectionDate" type="date" class="form-control" /></div>
-                            <div class="mb-3"><label asp-for="Evidences[0].FileUpload">Upload Evidence File</label><input asp-for="Evidences[0].FileUpload" type="file" class="form-control" /></div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addEvidenceField()">Add Another Evidence</button>
-                    <div class="text-end"><button type="submit" class="btn btn-primary">Create Evidence</button></div>
-                </form>
-            </div>
+                }
 
-            <!-- WITNESS INFO TAB -->
-            <div class="tab-pane fade" id="witness-info" role="tabpanel">
-                <form asp-action="CreateWitness" method="post">
-                    <input type="hidden" name="caseId" value="@TempData["CaseId"]" />
-                    <div class="witness-container">
-                        <div class="witness-item mb-3">
-                            <div class="row mb-3">
-                                <div class="col-md-6"><label asp-for="Witnesses[0].Name">Name</label><input asp-for="Witnesses[0].Name" class="form-control" /></div>
-                                <div class="col-md-6"><label asp-for="Witnesses[0].ContactNumber">Contact Number</label><input asp-for="Witnesses[0].ContactNumber" class="form-control" /></div>
-                            </div>
-                            <div class="mb-3"><label asp-for="Witnesses[0].Address">Address</label><input asp-for="Witnesses[0].Address" class="form-control" /></div>
-                            <div class="mb-3"><label asp-for="Witnesses[0].Statement">Statement</label><textarea asp-for="Witnesses[0].Statement" class="form-control"></textarea></div>
-                            <div class="mb-3"><label asp-for="Witnesses[0].RelationToCase">Relation to Case</label><input asp-for="Witnesses[0].RelationToCase" class="form-control" /></div>
-                            <div class="mb-3"><label asp-for="Witnesses[0].Credibility">Credibility</label><input asp-for="Witnesses[0].Credibility" class="form-control" /></div>
-                            <div class="mb-3"><label asp-for="Witnesses[0].CredibilityRating">Credibility Rating</label><input asp-for="Witnesses[0].CredibilityRating" type="number" class="form-control" /></div>
-                            <div class="form-check mb-3"><input asp-for="Witnesses[0].IsAnonymous" type="checkbox" class="form-check-input" /><label class="form-check-label" asp-for="Witnesses[0].IsAnonymous">Anonymous</label></div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addWitnessField()">Add Another Witness</button>
-                    <div class="text-end"><button type="submit" class="btn btn-primary">Create Witness</button></div>
-                </form>
-            </div>
-
-            <!-- VICTIM INFO TAB -->
-            <div class="tab-pane fade" id="victim-info" role="tabpanel">
-                <form asp-action="CreateVictim" method="post">
-                    <input type="hidden" name="caseId" value="@TempData["CaseId"]" />
-                    <div class="victim-container">
-                        <div class="victim-item mb-3">
-                            <div class="row mb-3">
-                                <div class="col-md-6"><label asp-for="Victims[0].Name">Name</label><input asp-for="Victims[0].Name" class="form-control" /></div>
-                                <div class="col-md-6"><label asp-for="Victims[0].ContactNumber">Contact Number</label><input asp-for="Victims[0].ContactNumber" class="form-control" /></div>
-                            </div>
-                            <div class="mb-3"><label asp-for="Victims[0].Address">Address</label><input asp-for="Victims[0].Address" class="form-control" /></div>
-                            <div class="mb-3"><label asp-for="Victims[0].Description">Description</label><input asp-for="Victims[0].Description" class="form-control" /></div>
-                            <div class="mb-3"><label asp-for="Victims[0].IncidentDate">Incident Date</label><input asp-for="Victims[0].IncidentDate" type="date" class="form-control" /></div>
-                            <div class="mb-3"><label asp-for="Victims[0].InjurySeverity">Injury Severity</label><input asp-for="Victims[0].InjurySeverity" class="form-control" /></div>
-                            <div class="mb-3"><label asp-for="Victims[0].EmergencyContact">Emergency Contact</label><input asp-for="Victims[0].EmergencyContact" class="form-control" /></div>
-                            <div class="form-check mb-3"><input asp-for="Victims[0].IsMinor" type="checkbox" class="form-check-input" /><label class="form-check-label" asp-for="Victims[0].IsMinor">Is Minor</label></div>
-                            <div class="mb-3"><label asp-for="Victims[0].MedicalHistory">Medical History</label><textarea asp-for="Victims[0].MedicalHistory" class="form-control"></textarea></div>
-                            <div class="mb-3"><label asp-for="Victims[0].InjurySustained">Injury Sustained</label><textarea asp-for="Victims[0].InjurySustained" class="form-control"></textarea></div>
-                            <div class="mb-3"><label asp-for="Victims[0].PropertyDamage">Property Damage</label><textarea asp-for="Victims[0].PropertyDamage" class="form-control"></textarea></div>
-                            <div class="mb-3"><label asp-for="Victims[0].CompensationClaimed">Compensation Claimed</label><textarea asp-for="Victims[0].CompensationClaimed" class="form-control"></textarea></div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addVictimField()">Add Another Victim</button>
-                    <div class="text-end"><button type="submit" class="btn btn-primary">Create Victim</button></div>
-                </form>
-            </div>
-
-            <!-- SUSPECT INFO TAB -->
-            <div class="tab-pane fade" id="suspect-info" role="tabpanel">
-                <form asp-action="CreateSuspect" method="post">
-                    <input type="hidden" name="caseId" value="@TempData["CaseId"]" />
-                    <div class="suspect-container">
-                        <div class="suspect-item mb-3">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Name</label>
-                                    <input type="text" name="Suspects[0].Name" class="form-control" placeholder="Enter suspect name" />
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Alias</label>
-                                    <input type="text" name="Suspects[0].Alias" class="form-control" placeholder="Enter alias" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Age</label>
-                                    <input type="number" name="Suspects[0].Age" class="form-control" />
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Gender</label>
-                                    <input type="text" name="Suspects[0].Gender" class="form-control" />
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Suspect Status</label>
-                                    <input type="text" name="Suspects[0].SuspectStatus" class="form-control" value="Under Investigation" />
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Description</label>
-                                <textarea name="Suspects[0].Description" class="form-control" rows="2"></textarea>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Last Known Location</label>
-                                    <input type="text" name="Suspects[0].LastKnownLocation" class="form-control" />
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Physical Description</label>
-                                    <input type="text" name="Suspects[0].PhysicalDescription" class="form-control" />
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Contact Information</label>
-                                    <input type="text" name="Suspects[0].ContactInformation" class="form-control" />
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Occupation</label>
-                                    <input type="text" name="Suspects[0].Occupation" class="form-control" />
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Relationship to Victim</label>
-                                <input type="text" name="Suspects[0].RelationshipToVictim" class="form-control" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Possible Motives</label>
-                                <input type="text" name="Suspects[0].PossibleMotives" class="form-control" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Alibi</label>
-                                <input type="text" name="Suspects[0].Alibi" class="form-control" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Last Seen Date</label>
-                                <input type="date" name="Suspects[0].LastSeenDate" class="form-control" />
-                            </div>
-                            <div class="form-check mb-3">
-                                <input type="checkbox" name="Suspects[0].IsPersonOfInterest" class="form-check-input" id="personOfInterest0" />
-                                <label class="form-check-label" for="personOfInterest0">Is Person of Interest</label>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-outline-primary btn-sm mb-3" onclick="addSuspectField()">Add Another Suspect</button>
-                    <div class="text-end mt-4">
-                        <button type="submit" class="btn btn-primary">Create Suspect</button>
-                    </div>
-                </form>
-            </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">Create Case</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script src="~/vendor/libs/select2/select2.js"></script>
     <link href="~/vendor/libs/select2/select2.css" rel="stylesheet" />
     <script>
-        let evidenceCount = 1;
-        let witnessCount = 1;
-        let victimCount = 1;
-        let criminalCount = 1;
-        let suspectCount = 1;
-
-        function addCriminalField() {
-            const container = document.querySelector('.criminal-container');
-            const newCriminal = document.createElement('div');
-            newCriminal.className = 'criminal-item mb-3';
-            newCriminal.innerHTML = `
-                <hr class="my-4">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label>Name</label>
-                        <input type="text" name="Criminals[${criminalCount}].Name" class="form-control" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label>Alias</label>
-                        <input type="text" name="Criminals[${criminalCount}].Alias" class="form-control" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label>Age</label>
-                        <input type="number" name="Criminals[${criminalCount}].Age" class="form-control" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label>Gender</label>
-                        <input type="text" name="Criminals[${criminalCount}].Gender" class="form-control" />
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label>Status</label>
-                        <input type="text" name="Criminals[${criminalCount}].Status" class="form-control" value="At Large" />
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label>Gang Affiliation</label>
-                    <input type="text" name="Criminals[${criminalCount}].GangAffiliation" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Accomplices</label>
-                    <input type="text" name="Criminals[${criminalCount}].Accomplices" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Weapon Used</label>
-                    <input type="text" name="Criminals[${criminalCount}].WeaponUsed" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Psychological Profile</label>
-                    <textarea name="Criminals[${criminalCount}].PsychologicalProfile" class="form-control"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label>Last Known Location</label>
-                    <input type="text" name="Criminals[${criminalCount}].LastKnownLocation" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Total Bounty</label>
-                    <input type="number" name="Criminals[${criminalCount}].TotalBounty" class="form-control" />
-                </div>
-            `;
-            container.appendChild(newCriminal);
-            criminalCount++;
-        }
-
-        function addEvidenceField() {
-            const container = document.querySelector('.evidence-container');
-            const newEvidence = document.createElement('div');
-            newEvidence.className = 'evidence-item mb-3';
-            newEvidence.innerHTML = `
-                <hr class="my-4">
-                <div class="mb-3">
-                    <label>Title</label>
-                    <input type="text" name="Evidences[${evidenceCount}].Title" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Description</label>
-                    <textarea name="Evidences[${evidenceCount}].Description" class="form-control"></textarea>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label>Type</label>
-                        <input type="text" name="Evidences[${evidenceCount}].Type" class="form-control" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label>Storage Location</label>
-                        <input type="text" name="Evidences[${evidenceCount}].StorageLocation" class="form-control" />
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label>Collection Date</label>
-                    <input type="date" name="Evidences[${evidenceCount}].CollectionDate" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Upload File</label>
-                    <input type="file" name="Evidences[${evidenceCount}].FileUpload" class="form-control" />
-                </div>
-            `;
-            container.appendChild(newEvidence);
-            evidenceCount++;
-        }
-
-        function addWitnessField() {
-            const container = document.querySelector('.witness-container');
-            const newWitness = document.createElement('div');
-            newWitness.className = 'witness-item mb-3';
-            newWitness.innerHTML = `
-                <hr class="my-4">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label>Name</label>
-                        <input type="text" name="Witnesses[${witnessCount}].Name" class="form-control" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label>Contact Number</label>
-                        <input type="text" name="Witnesses[${witnessCount}].ContactNumber" class="form-control" />
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label>Address</label>
-                    <input type="text" name="Witnesses[${witnessCount}].Address" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Statement</label>
-                    <textarea name="Witnesses[${witnessCount}].Statement" class="form-control"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label>Relation to Case</label>
-                    <input type="text" name="Witnesses[${witnessCount}].RelationToCase" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Credibility</label>
-                    <input type="text" name="Witnesses[${witnessCount}].Credibility" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Credibility Rating</label>
-                    <input type="number" name="Witnesses[${witnessCount}].CredibilityRating" class="form-control" />
-                </div>
-                <div class="form-check mb-3">
-                    <input type="checkbox" name="Witnesses[${witnessCount}].IsAnonymous" class="form-check-input" id="witness${witnessCount}Anonymous" />
-                    <label class="form-check-label" for="witness${witnessCount}Anonymous">Anonymous</label>
-                </div>
-            `;
-            container.appendChild(newWitness);
-            witnessCount++;
-        }
-
-        function addVictimField() {
-            const container = document.querySelector('.victim-container');
-            const newVictim = document.createElement('div');
-            newVictim.className = 'victim-item mb-3';
-            newVictim.innerHTML = `
-                <hr class="my-4">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label>Name</label>
-                        <input type="text" name="Victims[${victimCount}].Name" class="form-control" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label>Contact Number</label>
-                        <input type="text" name="Victims[${victimCount}].ContactNumber" class="form-control" />
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label>Address</label>
-                    <input type="text" name="Victims[${victimCount}].Address" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Description</label>
-                    <textarea name="Victims[${victimCount}].Description" class="form-control"></textarea>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label>Incident Date</label>
-                        <input type="date" name="Victims[${victimCount}].IncidentDate" class="form-control" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label>Injury Severity</label>
-                        <input type="text" name="Victims[${victimCount}].InjurySeverity" class="form-control" />
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label>Emergency Contact</label>
-                    <input type="text" name="Victims[${victimCount}].EmergencyContact" class="form-control" />
-                </div>
-                <div class="form-check mb-3">
-                    <input type="checkbox" name="Victims[${victimCount}].IsMinor" class="form-check-input" />
-                    <label class="form-check-label">Is Minor</label>
-                </div>
-                <div class="mb-3">
-                    <label>Medical History</label>
-                    <textarea name="Victims[${victimCount}].MedicalHistory" class="form-control"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label>Injury Sustained</label>
-                    <textarea name="Victims[${victimCount}].InjurySustained" class="form-control"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label>Property Damage</label>
-                    <textarea name="Victims[${victimCount}].PropertyDamage" class="form-control"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label>Compensation Claimed</label>
-                    <textarea name="Victims[${victimCount}].CompensationClaimed" class="form-control"></textarea>
-                </div>
-            `;
-            container.appendChild(newVictim);
-            victimCount++;
-        }
-
-        function addSuspectField() {
-            const container = document.querySelector('.suspect-container');
-            const newSuspect = document.createElement('div');
-            newSuspect.className = 'suspect-item mb-3';
-            newSuspect.innerHTML = `
-                <hr class="my-4">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label>Name</label>
-                        <input type="text" name="Suspects[${suspectCount}].Name" class="form-control" />
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label>Alias</label>
-                        <input type="text" name="Suspects[${suspectCount}].Alias" class="form-control" />
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label>Age</label>
-                    <input type="number" name="Suspects[${suspectCount}].Age" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Gender</label>
-                    <input type="text" name="Suspects[${suspectCount}].Gender" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Description</label>
-                    <textarea name="Suspects[${suspectCount}].Description" class="form-control"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label>Suspect Status</label>
-                    <input type="text" name="Suspects[${suspectCount}].SuspectStatus" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Last Known Location</label>
-                    <input type="text" name="Suspects[${suspectCount}].LastKnownLocation" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Possible Motives</label>
-                    <input type="text" name="Suspects[${suspectCount}].PossibleMotives" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Relationship to Victim</label>
-                    <input type="text" name="Suspects[${suspectCount}].RelationshipToVictim" class="form-control" />
-                </div>
-                <div class="mb-3">
-                    <label>Alibi</label>
-                    <input type="text" name="Suspects[${suspectCount}].Alibi" class="form-control" />
-                </div>
-                <div class="form-check mb-3">
-                    <input type="checkbox" name="Suspects[${suspectCount}].IsPersonOfInterest" class="form-check-input" />
-                    <label class="form-check-label">Is Person of Interest</label>
-                </div>
-            `;
-            container.appendChild(newSuspect);
-            suspectCount++;
-        }
+        $(document).ready(function() {
+            $('.form-select').select2();
+        });
     </script>
 }
-
-<script>
-    document.querySelector('form').addEventListener('submit', function(event) {
-        const selectedTeams = document.querySelectorAll('select[name="selectedTeams"] option:checked');
-        const invalidGuids = Array.from(selectedTeams).some(option => !isValidGuid(option.value));
-        if (invalidGuids) {
-            event.preventDefault();
-            alert('One or more selected team IDs are invalid. Please check your selections.');
-        }
-    });
-
-    function isValidGuid(guid) {
-        const guidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-        return guidRegex.test(guid);
-    }
-</script>
 
