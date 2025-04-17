@@ -4,6 +4,7 @@
     var criminalStats = (IEnumerable<dynamic>)ViewBag.CriminalStats;
     var caseStatusStats = (IEnumerable<dynamic>)ViewBag.CaseStatusStats;
     var teamPerformance = (IEnumerable<dynamic>)ViewBag.TeamPerformance;
+    var isSentinelPrime = ViewBag.IsSentinelPrime;
 }
 
 @section VendorStyles {
@@ -44,7 +45,7 @@
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
         <!-- Cases Trend Chart -->
-        <div class="col-12 col-lg-6 mb-4">
+        <div class="col-12 col-lg-12 mb-4">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Cases Trend (Last 6 Months)</h5>
@@ -79,185 +80,193 @@
             </div>
         </div>
 
-        <!-- Team Performance -->
-        <div class="col-12 col-lg-6 mb-4">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Team Performance</h5>
-                </div>
-                <div class="card-body">
-                    <div id="teamPerformanceChart"></div>
+        @if (isSentinelPrime)
+        {
+            <!-- Team Performance -->
+            <div class="col-12 col-lg-12 mb-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Team Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="teamPerformanceChart"></div>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
     </div>
 </div>
 
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Cases Trend Chart
-            var casesOptions = {
-                series: [{
-                    name: 'Cases',
-                    data: @Json.Serialize(caseStats.Select(x => x.Count).Reverse())
-                }],
-                chart: {
-                    type: 'area',
-                    height: 350,
-                    toolbar: { show: false },
-                    foreColor: '#697a8d'
-                },
-                dataLabels: { enabled: false },
-                stroke: { curve: 'smooth' },
-                xaxis: {
-                    categories: @Json.Serialize(caseStats.Select(x => x.Month).Reverse()),
-                    labels: {
-                        style: {
-                            colors: '#697a8d'
-                        }
-                    }
-                },
-                yaxis: {
-                    labels: {
-                        style: {
-                            colors: '#697a8d'
-                        }
-                    }
-                },
-                colors: ['#696cff'],
-                fill: {
-                    type: 'gradient',
-                    gradient: {
-                        shadeIntensity: 1,
-                        opacityFrom: 0.7,
-                        opacityTo: 0.3
-                    }
-                },
-                legend: {
-                    labels: {
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Cases Trend Chart
+        var casesOptions = {
+            series: [{
+                name: 'Cases',
+                data: @Html.Raw(Json.Serialize(caseStats.Select(x => x.Count).Reverse()))
+            }],
+            chart: {
+                type: 'area',
+                height: 350,
+                toolbar: { show: false },
+                foreColor: '#697a8d'
+            },
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth' },
+            xaxis: {
+                categories: @Html.Raw(Json.Serialize(caseStats.Select(x => x.Month).Reverse())),
+                labels: {
+                    style: {
                         colors: '#697a8d'
                     }
                 }
-            };
-
-            var casesChart = new ApexCharts(document.querySelector("#casesTrendChart"), casesOptions);
-            casesChart.render();
-
-            // Criminals Trend Chart
-            var criminalsOptions = {
-                series: [{
-                    name: 'Criminals',
-                    data: @Json.Serialize(criminalStats.Select(x => x.Count))
-                }],
-                chart: {
-                    type: 'bar',
-                    height: 350,
-                    toolbar: { show: false },
-                    foreColor: '#697a8d'
-                },
-                plotOptions: {
-                    bar: {
-                        borderRadius: 4,
-                        horizontal: false
-                    }
-                },
-                dataLabels: { enabled: false },
-                xaxis: {
-                    categories: @Json.Serialize(criminalStats.Select(x => x.Month)),
-                    labels: {
-                        style: {
-                            colors: '#697a8d'
-                        }
-                    }
-                },
-                yaxis: {
-                    labels: {
-                        style: {
-                            colors: '#697a8d'
-                        }
-                    }
-                },
-                colors: ['#ff3e1d'],
-                legend: {
-                    labels: {
+            },
+            yaxis: {
+                labels: {
+                    style: {
                         colors: '#697a8d'
                     }
                 }
-            };
+            },
+            colors: ['#696cff'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.3
+                }
+            },
+            legend: {
+                labels: {
+                    colors: '#697a8d'
+                }
+            }
+        };
 
-            var criminalsChart = new ApexCharts(document.querySelector("#criminalsTrendChart"), criminalsOptions);
-            criminalsChart.render();
+        var casesChart = new ApexCharts(document.querySelector("#casesTrendChart"), casesOptions);
+        casesChart.render();
 
-            // Case Status Distribution
-            var caseStatusOptions = {
-                series: @Json.Serialize(caseStatusStats.Select(x => x.Count)),
-                chart: {
-                    type: 'donut',
-                    height: 350,
-                    foreColor: '#697a8d'
-                },
-                labels: @Json.Serialize(caseStatusStats.Select(x => x.Status)),
-                colors: ['#696cff', '#ff3e1d', '#71dd37', '#ffab00'],
-                legend: {
-                    position: 'bottom',
-                    labels: {
+        // Criminals Trend Chart
+        var criminalsOptions = {
+            series: [{
+                name: 'Criminals',
+                data: @Html.Raw(Json.Serialize(criminalStats.Select(x => x.Count)))
+            }],
+            chart: {
+                type: 'bar',
+                height: 350,
+                toolbar: { show: false },
+                foreColor: '#697a8d'
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    horizontal: false
+                }
+            },
+            dataLabels: { enabled: false },
+            xaxis: {
+                categories: @Html.Raw(Json.Serialize(criminalStats.Select(x => x.Month))),
+                labels: {
+                    style: {
                         colors: '#697a8d'
                     }
                 }
-            };
-
-            var caseStatusChart = new ApexCharts(document.querySelector("#caseStatusChart"), caseStatusOptions);
-            caseStatusChart.render();
-
-            // Team Performance
-            var teamPerformanceOptions = {
-                series: [{
-                    name: 'Cases Solved',
-                    data: @Json.Serialize(teamPerformance.Select(x => x.CasesSolved))
-                }, {
-                    name: 'Total Cases',
-                    data: @Json.Serialize(teamPerformance.Select(x => x.TotalCases))
-                }],
-                chart: {
-                    type: 'bar',
-                    height: 350,
-                    stacked: true,
-                    toolbar: { show: false },
-                    foreColor: '#697a8d'
-                },
-                plotOptions: {
-                    bar: {
-                        horizontal: true,
-                        borderRadius: 4
-                    }
-                },
-                dataLabels: { enabled: false },
-                xaxis: {
-                    categories: @Json.Serialize(teamPerformance.Select(x => x.TeamName)),
-                    labels: {
-                        style: {
-                            colors: '#697a8d'
-                        }
-                    }
-                },
-                yaxis: {
-                    labels: {
-                        style: {
-                            colors: '#697a8d'
-                        }
-                    }
-                },
-                colors: ['#71dd37', '#696cff'],
-                legend: {
-                    position: 'bottom',
-                    labels: {
+            },
+            yaxis: {
+                labels: {
+                    style: {
                         colors: '#697a8d'
                     }
                 }
-            };
+            },
+            colors: ['#ff3e1d'],
+            legend: {
+                labels: {
+                    colors: '#697a8d'
+                }
+            }
+        };
 
-            var teamPerformanceChart = new ApexCharts(document.querySelector("#teamPerformanceChart"), teamPerformanceOptions);
-            teamPerformanceChart.render();
-        });
-    </script>
+        var criminalsChart = new ApexCharts(document.querySelector("#criminalsTrendChart"), criminalsOptions);
+        criminalsChart.render();
+
+        // Case Status Distribution
+        var caseStatusOptions = {
+            series: @Html.Raw(Json.Serialize(caseStatusStats.Select(x => x.Count))),
+            chart: {
+                type: 'donut',
+                height: 350,
+                foreColor: '#697a8d'
+            },
+            labels: @Html.Raw(Json.Serialize(caseStatusStats.Select(x => x.Status))),
+            colors: ['#696cff', '#ff3e1d', '#71dd37', '#ffab00'],
+            legend: {
+                position: 'bottom',
+                labels: {
+                    colors: '#697a8d'
+                }
+            }
+        };
+
+        var caseStatusChart = new ApexCharts(document.querySelector("#caseStatusChart"), caseStatusOptions);
+        caseStatusChart.render();
+
+        // Team Performance Chart (Sentinel Prime Only)
+    @if (isSentinelPrime)
+    {
+        <text>
+                var teamPerformanceOptions = {
+                    series: [{
+                        name: 'Cases Solved',
+                        data: @Html.Raw(Json.Serialize(teamPerformance.Select(x => x.CasesSolved)))
+                    }, {
+                        name: 'Total Cases',
+                        data: @Html.Raw(Json.Serialize(teamPerformance.Select(x => x.TotalCases)))
+                    }],
+                    chart: {
+                        type: 'bar',
+                        height: 350,
+                        stacked: true,
+                        toolbar: { show: false },
+                        foreColor: '#697a8d'
+                    },
+                    plotOptions: {
+                        bar: {
+                            horizontal: true,
+                            borderRadius: 4
+                        }
+                    },
+                    dataLabels: { enabled: false },
+                    xaxis: {
+                        categories: @Html.Raw(Json.Serialize(teamPerformance.Select(x => x.TeamName))),
+                        labels: {
+                            style: {
+                                colors: '#697a8d'
+                            }
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: {
+                                colors: '#697a8d'
+                            }
+                        }
+                    },
+                    colors: ['#71dd37', '#696cff'],
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            colors: '#697a8d'
+                        }
+                    }
+                };
+
+                var teamPerformanceChart = new ApexCharts(document.querySelector("#teamPerformanceChart"), teamPerformanceOptions);
+                teamPerformanceChart.render();
+        </text>
+    }
+    });
+</script>

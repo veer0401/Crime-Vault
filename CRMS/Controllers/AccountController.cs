@@ -9,6 +9,7 @@ using System;
 using System.Threading.Tasks;
 using System.Security.Claims;
 using CRMS.Services;
+using Microsoft.AspNetCore.Authentication;
 
 namespace CRMS.Controllers
 {
@@ -197,6 +198,18 @@ namespace CRMS.Controllers
 
             await _signInManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AutoLogout()
+        {
+            // Clear the session
+            await HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+            
+            // Clear any existing cookies
+            Response.Cookies.Delete(".AspNetCore.Identity.Application");
+            
+            return Json(new { success = true });
         }
 
         [Authorize]

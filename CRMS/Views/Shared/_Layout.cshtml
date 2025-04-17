@@ -1,0 +1,56 @@
+@section VendorScripts {
+    <script src="~/vendor/libs/toastr/toastr.js"></script>
+    <script src="~/vendor/libs/apex-charts/apexcharts.js"></script>
+    <script src="~/vendor/libs/swiper/swiper.js"></script>
+    <script src="~/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+    <script>
+        // Auto logout after 10 seconds of inactivity
+        let timeout;
+        const logoutTime = 10000; // 10 seconds in milliseconds
+
+        function resetTimeout() {
+            clearTimeout(timeout);
+            timeout = setTimeout(logout, logoutTime);
+        }
+
+        async function logout() {
+            try {
+                // First, call the server to clear the session
+                const response = await fetch('/Account/AutoLogout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                if (response.ok) {
+                    // Show logout message
+                    toastr.warning('You have been logged out due to inactivity', 'Session Expired', {
+                        timeOut: 3000,
+                        closeButton: true,
+                        progressBar: true
+                    });
+
+                    // Redirect to login page after a short delay
+                    setTimeout(() => {
+                        window.location.href = '/Account/Login';
+                    }, 3000);
+                } else {
+                    console.error('Failed to logout:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error during logout:', error);
+            }
+        }
+
+        // Reset timeout on any user activity
+        document.addEventListener('mousemove', resetTimeout);
+        document.addEventListener('keypress', resetTimeout);
+        document.addEventListener('click', resetTimeout);
+        document.addEventListener('scroll', resetTimeout);
+
+        // Initialize timeout
+        resetTimeout();
+    </script>
+} 

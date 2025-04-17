@@ -31,10 +31,13 @@ namespace CRMS.Controllers
             _activityLogService = activityLogService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var user = await _userManager.GetUserAsync(User);
+            var isSentinelPrime = user != null && await _userManager.IsInRoleAsync(user, "Sentinel Prime");
+
             // Get cases from last 6 months
-            var sixMonthsAgo = DateTime.UtcNow.AddMonths(-600);
+            var sixMonthsAgo = DateTime.UtcNow.AddMonths(-60);
             var cases = _context.Cases
                 .Where(c => c.CreatedDate >= sixMonthsAgo)
                 .Select(c => new { c.CreatedDate, c.Status })
@@ -78,23 +81,46 @@ namespace CRMS.Controllers
                 .OrderBy(x => x.Month)
                 .ToList();
 
-            // Get crime type distribution
-      
-            // Get team performance data
-            var teamPerformance = _context.Teams
-                .Select(t => new
-                {
-                    TeamName = t.Name,
-                    CasesSolved = t.CaseTeams.Count(ct => ct.Case.Status == "Closed"),
-                    TotalCases = t.CaseTeams.Count
-                })
-                .ToList();
+            // Get user's team statistics
+            var userTeamStats = new
+            {
+                TeamMemberOf = _context.TeamMembers.Count(tm => tm.UserId == user.Id),
+                TotalTeams = _context.Teams.Count(t => t.TeamLeaderId == user.Id),
+                TotalTeamLeader = _context.Teams.Count(t => t.TeamLeaderId == user.Id)
+            };
+
+            // Get user's case statistics
+            var userCaseStats = new
+            {
+                AssignedCases = _context.CaseTeams
+                    .Count(ct => ct.Team.TeamMembers.Any(tm => tm.UserId == user.Id) || 
+                                ct.Team.TeamLeaderId == user.Id),
+                CompletedCases = _context.CaseTeams
+                    .Count(ct => (ct.Team.TeamMembers.Any(tm => tm.UserId == user.Id) || 
+                                 ct.Team.TeamLeaderId == user.Id) && 
+                                ct.Case.Status == "Closed")
+            };
+
+            if (isSentinelPrime)
+            {
+                // Get team performance data only for Sentinel Prime
+                var teamPerformance = _context.Teams
+                    .Select(t => new
+                    {
+                        TeamName = t.Name,
+                        CasesSolved = t.CaseTeams.Count(ct => ct.Case.Status == "Closed"),
+                        TotalCases = t.CaseTeams.Count
+                    })
+                    .ToList();
+                ViewBag.TeamPerformance = teamPerformance;
+            }
 
             ViewBag.CaseStats = caseStats;
             ViewBag.CriminalStats = criminalStats;
             ViewBag.CaseStatusStats = caseStatusStats;
-            //ViewBag.CrimeTypeStats = crimeTypeStats;
-            ViewBag.TeamPerformance = teamPerformance;
+            ViewBag.IsSentinelPrime = isSentinelPrime;
+            ViewBag.UserTeamStats = userTeamStats;
+            ViewBag.UserCaseStats = userCaseStats;
 
             // Log the activity
             _activityLogService.LogActivityAsync(
