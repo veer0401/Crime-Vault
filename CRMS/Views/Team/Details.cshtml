@@ -1,6 +1,10 @@
 ﻿@model CRMS.Models.Team
 @{
     ViewData["Title"] = "Team Details";
+    var istTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+    var hasCases = Model.CaseTeams.Any();
+    var hasOpenCases = Model.CaseTeams.Any(ct => ct.Case.Status == "Open");
+    var hasClosedCases = Model.CaseTeams.Any(ct => ct.Case.Status == "Closed");
 }
 
 <div class="container py-4">
@@ -32,9 +36,128 @@
                     <div class="card bg-light">
                         <div class="card-body">
                             <p><strong>Total Members:</strong> @(Model.TeamMembers.Count + 1)</p>
+                            <p><strong>Total Cases:</strong> @Model.CaseTeams.Count</p>
+                            <p><strong>Open Cases:</strong> @Model.CaseTeams.Count(ct => ct.Case.Status == "Open")</p>
+                            <p><strong>Closed Cases:</strong> @Model.CaseTeams.Count(ct => ct.Case.Status == "Closed")</p>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Assigned Cases Section -->
+            <div class="mt-4">
+                <h4>Assigned Cases</h4>
+                
+                @if (!hasCases)
+                {
+                    <div class="alert alert-info">
+                        <i class="ti ti-info-circle me-2"></i>You don't have any assigned cases.
+                    </div>
+                }
+                else
+                {
+                    <!-- Open Cases -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Open Cases</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (!hasOpenCases)
+                            {
+                                <div class="alert alert-info">
+                                    <i class="ti ti-info-circle me-2"></i>You don't have any open cases.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Case Title</th>
+                                                <th>Priority</th>
+                                                <th>Assigned Date</th>
+                                              
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var caseTeam in Model.CaseTeams.Where(ct => ct.Case.Status == "Open").OrderByDescending(ct => ct.AssignedDate))
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <strong>@caseTeam.Case.Title</strong>
+                                                        <div class="text-muted">@caseTeam.Case.Description</div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-@(caseTeam.Case.Priority == "High" ? "danger" : caseTeam.Case.Priority == "Medium" ? "warning" : "info")">
+                                                            @caseTeam.Case.Priority
+                                                        </span>
+                                                    </td>
+                                                    <td>@TimeZoneInfo.ConvertTimeFromUtc(caseTeam.AssignedDate, istTimeZone).ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                                   
+                                                    <td>
+                                                        <a asp-controller="Case" asp-action="Edit" asp-route-id="@caseTeam.Case.Id" class="btn btn-sm btn-primary">
+                                                            <i class="ti ti-edit me-1"></i>Edit
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Closed Cases -->
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">Closed Cases</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (!hasClosedCases)
+                            {
+                                <div class="alert alert-info">
+                                    <i class="ti ti-info-circle me-2"></i>You don't have any closed cases.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Case Title</th>
+                                                <th>Priority</th>
+                                                <th>Assigned Date</th>
+                                                <th>Role</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var caseTeam in Model.CaseTeams.Where(ct => ct.Case.Status == "Closed").OrderByDescending(ct => ct.AssignedDate))
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <strong>@caseTeam.Case.Title</strong>
+                                                        <div class="text-muted">@caseTeam.Case.Description</div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-@(caseTeam.Case.Priority == "High" ? "danger" : caseTeam.Case.Priority == "Medium" ? "warning" : "info")">
+                                                            @caseTeam.Case.Priority
+                                                        </span>
+                                                    </td>
+                                                    <td>@TimeZoneInfo.ConvertTimeFromUtc(caseTeam.AssignedDate, istTimeZone).ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                                    <td>@caseTeam.Role</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
             </div>
         </div>
         <div class="card-footer">

@@ -54,11 +54,11 @@
                         <div data-i18n="Criminal Add">Criminal Add</div>
                     </a>
                 </li>
-                <li class='menu-item@(currentPage == "/Criminal/Search" ? " active" : "")'>
-                    <a asp-controller="Criminal" asp-action="Search" class="menu-link">
-                        <div data-i18n="Criminal Search">Criminal Search</div>
-                    </a>
-                </li>
+                @* <li class='menu-item@(currentPage == "/Criminal/Search" ? " active" : "")'> *@
+                @*     <a asp-controller="Criminal" asp-action="Search" class="menu-link"> *@
+                @*         <div data-i18n="Criminal Search">Criminal Search</div> *@
+                @*     </a> *@
+                @* </li> *@
             </ul>
         </li>
         <!-- Users Section -->
@@ -79,11 +79,11 @@
                         <div data-i18n="User Add">User Add</div>
                     </a>
                 </li>
-                <li class='menu-item@(currentPage == "/User/Ranking" ? " active" : "")'>
-                    <a asp-controller="User" asp-action="Ranking" class="menu-link">
-                        <div data-i18n="User Ranking">User Ranking</div>
-                    </a>
-                </li>
+                @* <li class='menu-item@(currentPage == "/User/Ranking" ? " active" : "")'> *@
+                @*     <a asp-controller="User" asp-action="Ranking" class="menu-link"> *@
+                @*         <div data-i18n="User Ranking">User Ranking</div> *@
+                @*     </a> *@
+                @* </li> *@
             </ul>
         </li>
 
@@ -161,20 +161,7 @@
 
         <!-- Bounties Section -->
        
-        <li class='menu-item@(currentPage.StartsWith("/Bounty") ? " active open" : "")'>
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons ti ti-currency-dollar"></i>
-                <div data-i18n="Bounties">Bounties</div>
-            </a>
-            <ul class="menu-sub">
-                <li class='menu-item@(currentPage == "/Bounty/Create" ? " active" : "")'>
-                    <a asp-controller="Bounty" asp-action="Create" class="menu-link">
-                        <div data-i18n="Create Bounty">Create Bounty</div>
-                    </a>
-                </li>
-            </ul>
-        </li>
-
+        
         <!-- Tasks Section -->
         
         <li class='menu-item@(currentPage.StartsWith("/Files") ? " active open" : "")'>
@@ -191,9 +178,8 @@
                 <div data-i18n="Team Chat">Team Chat</div>
             </a>
         </li>
-        <!-- Miscellaneous Section -->
        
-        <li class='menu-item@(currentPage.StartsWith("/Misc") ? " active open" : "")'>
+        <li class='menu-item@(currentPage.StartsWith("/Activtylog") ? " active open" : "")'>
             <a asp-controller="Activitylog" asp-action="Index" class="menu-link">
                 <i class="menu-icon tf-icons ti ti-settings"></i>
                 <div data-i18n="Logs">Logs</div>
