@@ -34,10 +34,10 @@ namespace CRMS.Controllers
         public IActionResult Index()
         {
             // Get cases from last 6 months
-            var sixMonthsAgo = DateTime.UtcNow.AddMonths(-6);
+            var sixMonthsAgo = DateTime.UtcNow.AddMonths(-600);
             var cases = _context.Cases
                 .Where(c => c.CreatedDate >= sixMonthsAgo)
-                .Select(c => new { c.CreatedDate })
+                .Select(c => new { c.CreatedDate, c.Status })
                 .ToList();
 
             // Process cases in memory
@@ -49,6 +49,16 @@ namespace CRMS.Controllers
                     Count = g.Count()
                 })
                 .OrderBy(x => x.Month)
+                .ToList();
+
+            // Get case status distribution
+            var caseStatusStats = cases
+                .GroupBy(c => c.Status)
+                .Select(g => new
+                {
+                    Status = g.Key,
+                    Count = g.Count()
+                })
                 .ToList();
 
             // Get criminals from last 6 months
@@ -68,8 +78,23 @@ namespace CRMS.Controllers
                 .OrderBy(x => x.Month)
                 .ToList();
 
+            // Get crime type distribution
+      
+            // Get team performance data
+            var teamPerformance = _context.Teams
+                .Select(t => new
+                {
+                    TeamName = t.Name,
+                    CasesSolved = t.CaseTeams.Count(ct => ct.Case.Status == "Closed"),
+                    TotalCases = t.CaseTeams.Count
+                })
+                .ToList();
+
             ViewBag.CaseStats = caseStats;
             ViewBag.CriminalStats = criminalStats;
+            ViewBag.CaseStatusStats = caseStatusStats;
+            //ViewBag.CrimeTypeStats = crimeTypeStats;
+            ViewBag.TeamPerformance = teamPerformance;
 
             // Log the activity
             _activityLogService.LogActivityAsync(
