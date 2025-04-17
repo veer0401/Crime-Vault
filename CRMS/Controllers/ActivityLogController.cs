@@ -9,7 +9,6 @@ using System.Security.Claims;
 namespace CRMS.Controllers
 {
     [Authorize]
-    [Route("[controller]")]
     public class ActivityLogController : Controller
     {
         private readonly AppDbContext _context;
@@ -21,9 +20,17 @@ namespace CRMS.Controllers
             _userManager = userManager;
         }
 
-        [HttpGet]
-        [Route("Index")]
-        public async Task<IActionResult> Index(string searchTerm = "", string actionType = "", string entityType = "", DateTime? startDate = null, DateTime? endDate = null)
+        [Route("ActivityLog")]
+        [Route("ActivityLog/Index")]
+        public async Task<IActionResult> Index(
+            string searchTerm = "", 
+            string actionType = "", 
+            string entityType = "", 
+            DateTime? startDate = null, 
+            DateTime? endDate = null, 
+            bool viewAll = false,
+            int page = 1,
+            int pageSize = 10)
         {
             var currentUser = await _userManager.GetUserAsync(User);
             if (currentUser == null)
@@ -34,6 +41,13 @@ namespace CRMS.Controllers
             var query = _context.ActivityLogs
                 .Include(al => al.User)
                 .AsQueryable();
+
+            // By default, show only logs from the last hour unless viewAll is true
+            if (!viewAll && !startDate.HasValue)
+            {
+                var oneHourAgo = DateTime.UtcNow.AddHours(-1);
+                query = query.Where(al => al.Timestamp >= oneHourAgo);
+            }
 
             // Apply filters
             if (!string.IsNullOrEmpty(searchTerm))
@@ -64,8 +78,18 @@ namespace CRMS.Controllers
                 query = query.Where(al => al.Timestamp <= endDate.Value);
             }
 
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            // Ensure page is within valid range
+            page = Math.Max(1, Math.Min(page, totalPages));
+
+            // Apply pagination
             var logs = await query
                 .OrderByDescending(al => al.Timestamp)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             ViewBag.ActionTypes = await _context.ActivityLogs
@@ -78,11 +102,17 @@ namespace CRMS.Controllers
                 .Distinct()
                 .ToListAsync();
 
+            ViewBag.ViewAll = viewAll;
+            ViewBag.TotalLogs = totalCount;
+            ViewBag.RecentLogs = logs.Count;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+
             return View(logs);
         }
 
-        [HttpGet]
-        [Route("Details/{id}")]
+        [Route("ActivityLog/Details/{id}")]
         public async Task<IActionResult> Details(Guid id)
         {
             var log = await _context.ActivityLogs

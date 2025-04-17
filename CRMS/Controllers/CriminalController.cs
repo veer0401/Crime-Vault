@@ -9,6 +9,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using CRMS.Services;
+using System.Security.Claims;
 
 namespace CRMS.Controllers
 {
@@ -119,6 +120,8 @@ namespace CRMS.Controllers
                 $"Created new criminal '{criminal.Name}'"
             );
 
+            TempData["ToastMessage"] = $"Successfully added criminal: {criminal.Name}";
+            TempData["ToastType"] = "success";
             return RedirectToAction("ViewList", "Criminal");
         }
 
@@ -252,6 +255,8 @@ namespace CRMS.Controllers
                 $"Updated criminal '{criminal.Name}'"
             );
 
+            TempData["ToastMessage"] = $"Successfully updated criminal: {criminal.Name}";
+            TempData["ToastType"] = "success";
             return RedirectToAction("ViewList", "Criminal");
         }
 
@@ -283,6 +288,8 @@ namespace CRMS.Controllers
             context.Criminal.Remove(criminal);
             await context.SaveChangesAsync();
 
+            TempData["ToastMessage"] = $"Successfully deleted criminal: {criminal.Name}";
+            TempData["ToastType"] = "success";
             return RedirectToAction("ViewList", "Criminal");
         }
     }

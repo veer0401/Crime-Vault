@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 using System.Security.Claims;
 using CRMS.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Principal;
+using Microsoft.Extensions.Logging;
 
 namespace CRMS.Controllers
 {
@@ -19,13 +22,15 @@ namespace CRMS.Controllers
         private readonly UserManager<Users> _userManager;
         private readonly SignInManager<Users> _signInManager;
         private readonly IActivityLogService _activityLogService;
+        private readonly ILogger<AccountController> _logger;
 
-        public AccountController(UserManager<Users> userManager, SignInManager<Users> signInManager, AppDbContext context, IActivityLogService activityLogService)
+        public AccountController(UserManager<Users> userManager, SignInManager<Users> signInManager, AppDbContext context, IActivityLogService activityLogService, ILogger<AccountController> logger = null)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
             _activityLogService = activityLogService;
+            _logger = logger;
         }
 
         [AllowAnonymous]
@@ -70,8 +75,8 @@ namespace CRMS.Controllers
                 return RedirectToAction("ResetPassword", "Account", new { email = user.Email });
             }
 
-            TempData["LoginSuccess"] = true;
-            TempData.Keep("LoginSuccess");
+            // Set login success message
+            TempData["SuccessMessage"] = "Welcome back! You have successfully logged in.";
 
             // Log the activity
             await _activityLogService.LogActivityAsync(
@@ -183,7 +188,7 @@ namespace CRMS.Controllers
             return RedirectToAction("Login", "Account");
         }
 
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> Logout()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -192,11 +197,29 @@ namespace CRMS.Controllers
             await _activityLogService.LogActivityAsync(
                 "Logout",
                 "User",
-                user.Id,
+                user?.Id ?? "Anonymous",
                 "User logged out"
             );
 
             await _signInManager.SignOutAsync();
+            return RedirectToAction("Login", "Account");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> LogoutPost()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            
+            // Log the activity
+            await _activityLogService.LogActivityAsync(
+                "Logout",
+                "User",
+                user?.Id ?? "Anonymous",
+                "User logged out"
+            );
+
+            await _signInManager.SignOutAsync();
+            TempData["InfoMessage"] = "You have been successfully logged out.";
             return RedirectToAction("Login", "Account");
         }
 
@@ -291,6 +314,28 @@ namespace CRMS.Controllers
             }
 
             return View("Profile", model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AccessDenied()
+        {
+            var userId = User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Anonymous";
+            var userName = User?.Identity?.Name ?? "Anonymous";
+            var requestedPath = Request.Path;
+            var userAgent = Request.Headers["User-Agent"].ToString();
+            var ipAddress = Request.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+
+            // Log the access denied attempt
+            await _activityLogService.LogActivityAsync(
+                "AccessDenied",
+                "Security",
+                userId,
+                $"Access denied for {userName} at {requestedPath}. IP: {ipAddress}, User Agent: {userAgent}"
+            );
+
+            _logger?.LogWarning($"Access denied for user {userName} at {requestedPath}");
+
+            return View();
         }
     }
 }

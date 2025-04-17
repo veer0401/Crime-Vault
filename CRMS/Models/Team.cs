@@ -30,6 +30,9 @@ namespace CRMS.Models
 
         // Navigation to team members (separate from leader)
         public virtual ICollection<TeamMember> TeamMembers { get; set; } = new List<TeamMember>();
+
+        // Timestamp for when the team was created
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }
 
     

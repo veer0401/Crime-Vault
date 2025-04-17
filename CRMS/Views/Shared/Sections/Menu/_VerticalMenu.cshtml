@@ -159,18 +159,14 @@
             </ul>
         </li>
 
-        <!-- Bounties Section -->
-       
-        
-        <!-- Tasks Section -->
-        
-        <li class='menu-item@(currentPage.StartsWith("/Files") ? " active open" : "")'>
-            <a asp-controller="Tasks" asp-action="List" class="menu-link">
-                <i class="menu-icon tf-icons ti ti-checklist"></i>
-                <div data-i18n="Files">Files</div>
-            </a>    
-        </li>
+        <!-- Files Section -->
 
+        <li class='menu-item@(currentPage.StartsWith("/File") ? " active open" : "")'>
+            <a asp-controller="File" asp-action="Index" class="menu-link">
+                <i class="menu-icon tf-icons ti ti-file"></i>
+                <div data-i18n="Files">Files</div>
+            </a>
+        </li>
         <!-- Messaging Section -->
         <li class='menu-item@(currentPage.StartsWith("/TeamMessage") ? " active" : "")'>
             <a asp-controller="TeamMessage" asp-action="Index" class="menu-link">

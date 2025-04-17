@@ -25,6 +25,8 @@ namespace CRMS.Data
         public DbSet<Bounty> Bounties { get; set; }
         public DbSet<TeamMessage> TeamMessages { get; set; }
         public DbSet<ActivityLog> ActivityLogs { get; set; }
+        public DbSet<FileModel> Files { get; set; }
+        public DbSet<FilePermission> FilePermissions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -91,6 +93,13 @@ namespace CRMS.Data
                 .WithMany()
                 .HasForeignKey(tm => tm.TeamId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure FileModel relationships
+            modelBuilder.Entity<FileModel>()
+                .HasMany(f => f.Permissions)
+                .WithOne(p => p.File)
+                .HasForeignKey(p => p.FileId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 

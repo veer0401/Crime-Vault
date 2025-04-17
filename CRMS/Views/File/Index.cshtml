@@ -1,0 +1,62 @@
+@model IEnumerable<CRMS.Controllers.FileViewModel>
+
+@{
+    ViewData["Title"] = "All Files";
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4">
+        <span class="text-muted fw-light">Files /</span> All Files
+    </h4>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">All Files</h5>
+            <a asp-action="Upload" class="btn btn-primary">
+                <i class="bx bx-plus me-1"></i> Upload New File
+            </a>
+        </div>
+        <div class="table-responsive text-nowrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Type</th>
+                        <th>Size</th>
+                        <th>Uploaded By</th>
+                        <th>Upload Date</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    @foreach (var file in Model)
+                    {
+                        <tr>
+                            <td>@file.FileName</td>
+                            <td>@file.FileType</td>
+                            <td>@(file.FileSize / 1024) KB</td>
+                            <td>@file.UploadedBy</td>
+                            <td>@file.UploadDate.ToString("g")</td>
+                            <td>@file.Description</td>
+                            <td>
+                                @if (file.CanDownload)
+                                {
+                                    <a asp-action="ViewFile" asp-route-id="@file.Id" class="btn btn-sm btn-primary">
+                                        <i class="bx bx-download me-1"></i> Download
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a asp-action="RequestAccess" asp-route-fileId="@file.Id" class="btn btn-sm btn-warning">
+                                        <i class="bx bx-key me-1"></i> Request Access
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div> 

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using CRMS.Services;
+using System.Security.Claims;
 
 namespace CRMS.Controllers
 {
@@ -323,6 +324,122 @@ namespace CRMS.Controllers
             }
 
             return RedirectToAction(nameof(Edit), new { id = teamId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(Team team)
+        {
+            if (ModelState.IsValid)
+            {
+                team.CreatedDate = DateTime.UtcNow;
+                _context.Teams.Add(team);
+                await _context.SaveChangesAsync();
+
+                // Log the activity
+                await _activityLogService.LogActivityAsync(
+                    "Create",
+                    "Team",
+                    User.FindFirstValue(ClaimTypes.NameIdentifier),
+                    $"Created new team: {team.Name}"
+                );
+
+                TempData["ToastMessage"] = $"Successfully created team: {team.Name}";
+                TempData["ToastType"] = "success";
+                return RedirectToAction(nameof(Index));
+            }
+            return View(team);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(Guid id, Team team)
+        {
+            if (id != team.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(team);
+                    await _context.SaveChangesAsync();
+
+                    // Log the activity
+                    await _activityLogService.LogActivityAsync(
+                        "Update",
+                        "Team",
+                        User.FindFirstValue(ClaimTypes.NameIdentifier),
+                        $"Updated team: {team.Name}"
+                    );
+
+                    TempData["ToastMessage"] = $"Successfully updated team: {team.Name}";
+                    TempData["ToastType"] = "success";
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!await TeamExists(team.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(team);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> JoinTeam(string teamCode)
+        {
+            var team = await _context.Teams.FirstOrDefaultAsync(t => t.TeamCode == teamCode);
+            if (team == null)
+            {
+                TempData["ToastMessage"] = "Invalid team code";
+                TempData["ToastType"] = "error";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var existingMember = await _context.TeamMembers
+                .FirstOrDefaultAsync(tm => tm.TeamId == team.Id && tm.UserId == userId);
+
+            if (existingMember != null)
+            {
+                TempData["ToastMessage"] = "You are already a member of this team";
+                TempData["ToastType"] = "warning";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var teamMember = new TeamMember
+            {
+                TeamId = team.Id,
+                UserId = userId,
+                JoinDate = DateTime.UtcNow
+            };
+
+            _context.TeamMembers.Add(teamMember);
+            await _context.SaveChangesAsync();
+
+            // Log the activity
+            await _activityLogService.LogActivityAsync(
+                "Join",
+                "Team",
+                userId,
+                $"Joined team: {team.Name}"
+            );
+
+            TempData["ToastMessage"] = $"Successfully joined team: {team.Name}";
+            TempData["ToastType"] = "success";
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task<bool> TeamExists(Guid id)
+        {
+            return await _context.Teams.AnyAsync(e => e.Id == id);
         }
     }
 }

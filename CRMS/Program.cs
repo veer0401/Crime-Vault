@@ -39,8 +39,11 @@ builder.Services.AddIdentity<Users, IdentityRole>(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Auth/Login"; // ✅ Make sure this matches your actual login URL
-        options.AccessDeniedPath = "/Auth/AccessDenied"; // Redirect if unauthorized
+        options.LoginPath = "/Account/Login";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.LogoutPath = "/Account/Logout";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.SlidingExpiration = true;
     });
 
 // ✅ Add authorization services

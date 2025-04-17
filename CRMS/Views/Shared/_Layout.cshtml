@@ -1,22 +1,73 @@
+@section VendorStyles {
+    <link rel="stylesheet" href="~/vendor/libs/toastr/toastr.css" />
+}
+
 @section VendorScripts {
     <script src="~/vendor/libs/toastr/toastr.js"></script>
     <script src="~/vendor/libs/apex-charts/apexcharts.js"></script>
     <script src="~/vendor/libs/swiper/swiper.js"></script>
     <script src="~/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
+}
+
+@section PageScripts {
     <script>
-        // Auto logout after 10 seconds of inactivity
+        // Initialize toastr options
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            timeOut: 3000,
+            extendedTimeOut: 1000,
+            positionClass: 'toast-top-right',
+            preventDuplicates: true,
+            newestOnTop: true
+        };
+
+        // Show toast messages from TempData
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+                toastr.success('@Html.Raw(TempData["SuccessMessage"])');
+            </text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+                toastr.error('@Html.Raw(TempData["ErrorMessage"])');
+            </text>
+        }
+        @if (TempData["WarningMessage"] != null)
+        {
+            <text>
+                toastr.warning('@Html.Raw(TempData["WarningMessage"])');
+            </text>
+        }
+        @if (TempData["InfoMessage"] != null)
+        {
+            <text>
+                toastr.info('@Html.Raw(TempData["InfoMessage"])');
+            </text>
+        }
+
+        // Auto logout after 2 minutes and 30 seconds of inactivity
         let timeout;
-        const logoutTime = 10000; // 10 seconds in milliseconds
+        const logoutTime = 150000; // 2 minutes and 30 seconds in milliseconds
+        let warningTimeout;
+        const warningTime = 120000; // 2 minutes in milliseconds
 
         function resetTimeout() {
             clearTimeout(timeout);
+            clearTimeout(warningTimeout);
             timeout = setTimeout(logout, logoutTime);
+            warningTimeout = setTimeout(showWarning, warningTime);
+        }
+
+        function showWarning() {
+            toastr.warning('Your session will expire in 30 seconds due to inactivity', 'Session Expiring Soon');
         }
 
         async function logout() {
             try {
-                // First, call the server to clear the session
-                const response = await fetch('/Account/AutoLogout', {
+                const response = await fetch('/Account/LogoutPost', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -25,22 +76,17 @@
                 });
 
                 if (response.ok) {
-                    // Show logout message
-                    toastr.warning('You have been logged out due to inactivity', 'Session Expired', {
-                        timeOut: 3000,
-                        closeButton: true,
-                        progressBar: true
-                    });
-
-                    // Redirect to login page after a short delay
+                    toastr.warning('You have been logged out due to inactivity', 'Session Expired');
                     setTimeout(() => {
                         window.location.href = '/Account/Login';
                     }, 3000);
                 } else {
                     console.error('Failed to logout:', response.statusText);
+                    window.location.href = '/Account/Login';
                 }
             } catch (error) {
                 console.error('Error during logout:', error);
+                window.location.href = '/Account/Login';
             }
         }
 
@@ -49,8 +95,12 @@
         document.addEventListener('keypress', resetTimeout);
         document.addEventListener('click', resetTimeout);
         document.addEventListener('scroll', resetTimeout);
+        document.addEventListener('touchstart', resetTimeout);
+        document.addEventListener('touchmove', resetTimeout);
 
-        // Initialize timeout
-        resetTimeout();
+        // Initialize timeout when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            resetTimeout();
+        });
     </script>
 } 

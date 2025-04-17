@@ -1,0 +1,64 @@
+@model IEnumerable<CRMS.Controllers.FileRequestViewModel>
+
+@{
+    ViewData["Title"] = "Manage Access Requests";
+}
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <h4 class="fw-bold py-3 mb-4">
+        <span class="text-muted fw-light">Files /</span> Manage Access Requests
+    </h4>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Pending Access Requests</h5>
+        </div>
+        <div class="table-responsive text-nowrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Requested By</th>
+                        <th>Request Date</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    @if (Model.Any())
+                    {
+                        @foreach (var request in Model)
+                        {
+                            <tr>
+                                <td>@request.FileName</td>
+                                <td>@request.RequestedBy</td>
+                                <td>@request.RequestDate.ToString("g")</td>
+                                <td>@request.Description</td>
+                                <td>
+                                    <form asp-action="ApproveRequest" method="post" class="d-inline">
+                                        <input type="hidden" name="permissionId" value="@request.Id" />
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="bx bx-check me-1"></i> Approve
+                                        </button>
+                                    </form>
+                                    <form asp-action="RejectRequest" method="post" class="d-inline">
+                                        <input type="hidden" name="permissionId" value="@request.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to reject this request?')">
+                                            <i class="bx bx-x me-1"></i> Reject
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center">No pending access requests</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div> 

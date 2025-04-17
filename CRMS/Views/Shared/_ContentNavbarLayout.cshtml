@@ -159,9 +159,35 @@
 
     <!-- Auto-logout script -->
     <script>
+        // Helper function to show toast messages
+        function showToast(type, message, title = '') {
+            const toastOptions = {
+                closeButton: true,
+                progressBar: true,
+                timeOut: 3000,
+                extendedTimeOut: 1000,
+                positionClass: 'toast-top-right'
+            };
+
+            switch (type.toLowerCase()) {
+                case 'success':
+                    toastr.success(message, title, toastOptions);
+                    break;
+                case 'error':
+                    toastr.error(message, title, toastOptions);
+                    break;
+                case 'warning':
+                    toastr.warning(message, title, toastOptions);
+                    break;
+                case 'info':
+                    toastr.info(message, title, toastOptions);
+                    break;
+            }
+        }
+
         // Auto logout after 10 seconds of inactivity
         let timeout;
-        const logoutTime = 10000; // 10 seconds in milliseconds
+        const logoutTime = 150000; // 10 seconds in milliseconds
 
         function resetTimeout() {
             clearTimeout(timeout);
@@ -170,7 +196,6 @@
 
         async function logout() {
             try {
-                // First, call the server to clear the session
                 const response = await fetch('/Account/AutoLogout', {
                     method: 'POST',
                     headers: {
@@ -180,26 +205,17 @@
                 });
 
                 if (response.ok) {
-                    // Show logout message using toastr
-                    if (typeof toastr !== 'undefined') {
-                        toastr.warning('You have been logged out due to inactivity', 'Session Expired', {
-                            timeOut: 3000,
-                            closeButton: true,
-                            progressBar: true
-                        });
-                    }
-
-                    // Redirect to login page after a short delay
+                    showToast('warning', 'You have been logged out due to inactivity', 'Session Expired');
                     setTimeout(() => {
                         window.location.href = '/Account/Login';
                     }, 3000);
                 } else {
                     console.error('Failed to logout:', response.statusText);
-                    window.location.href = '/Account/Login'; // Redirect anyway if the server call fails
+                    window.location.href = '/Account/Login';
                 }
             } catch (error) {
                 console.error('Error during logout:', error);
-                window.location.href = '/Account/Login'; // Redirect anyway if there's an error
+                window.location.href = '/Account/Login';
             }
         }
 
@@ -214,6 +230,12 @@
         // Initialize timeout when page loads
         document.addEventListener('DOMContentLoaded', function() {
             resetTimeout();
+            
+            // Show welcome message if user just logged in
+            const loginSuccess = document.getElementById('loginSuccessFlag');
+            if (loginSuccess && loginSuccess.value === 'true') {
+                showToast('success', 'Welcome back! You have successfully logged in.', 'Login Successful');
+            }
         });
     </script>
 

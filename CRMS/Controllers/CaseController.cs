@@ -14,6 +14,7 @@ using EditWitnessVM = CRMS.Models.EditModel.WitnessViewModel;
 using EditVictimVM = CRMS.Models.EditModel.VictimViewModel;
 using EditSuspectVM = CRMS.Models.EditModel.SuspectViewModel;
 using CRMS.Services;
+using System.Security.Claims;
 
 namespace CRMS.Controllers
 {
@@ -154,6 +155,8 @@ namespace CRMS.Controllers
                 $"Created new case '{newCase.Title}'"
             );
 
+            TempData["ToastMessage"] = $"Successfully created case: {newCase.Title}";
+            TempData["ToastType"] = "success";
             return RedirectToAction(nameof(Index));
         }
 
@@ -457,6 +460,8 @@ namespace CRMS.Controllers
                         $"Updated case '{caseEntity.Title}'"
                     );
 
+                    TempData["ToastMessage"] = $"Successfully updated case: {caseEntity.Title}";
+                    TempData["ToastType"] = "success";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -1280,6 +1285,29 @@ namespace CRMS.Controllers
             {
                 return Json(new { success = false, message = ex.Message });
             }
+        }
+
+        [HttpPost, ActionName("Delete")]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            var caseEntity = await _context.Cases.FindAsync(id);
+            if (caseEntity != null)
+            {
+                _context.Cases.Remove(caseEntity);
+                await _context.SaveChangesAsync();
+
+                // Log the activity
+                await _activityLogService.LogActivityAsync(
+                    "Delete",
+                    "Case",
+                    User.FindFirstValue(ClaimTypes.NameIdentifier),
+                    $"Deleted case: {caseEntity.Title}"
+                );
+
+                TempData["ToastMessage"] = $"Successfully deleted case: {caseEntity.Title}";
+                TempData["ToastType"] = "success";
+            }
+            return RedirectToAction(nameof(Index));
         }
     }
 }

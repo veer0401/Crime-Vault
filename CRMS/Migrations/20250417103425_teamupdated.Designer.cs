@@ -4,6 +4,7 @@ using CRMS.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CRMS.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250417103425_teamupdated")]
+    partial class teamupdated
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -337,78 +340,6 @@ namespace CRMS.Migrations
                     b.HasIndex("CaseId");
 
                     b.ToTable("Evidence");
-                });
-
-            modelBuilder.Entity("CRMS.Models.FileModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("FileSize")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("FileType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UploadDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UploadedByUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UploadedByUserId");
-
-                    b.ToTable("Files");
-                });
-
-            modelBuilder.Entity("CRMS.Models.FilePermission", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("ApprovalDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("FileId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsApproved")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("RequestDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RequestedByUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FileId");
-
-                    b.ToTable("FilePermissions");
                 });
 
             modelBuilder.Entity("CRMS.Models.Suspect", b =>
@@ -978,28 +909,6 @@ namespace CRMS.Migrations
                     b.Navigation("Case");
                 });
 
-            modelBuilder.Entity("CRMS.Models.FileModel", b =>
-                {
-                    b.HasOne("CRMS.Models.Users", "UploadedByUser")
-                        .WithMany()
-                        .HasForeignKey("UploadedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("UploadedByUser");
-                });
-
-            modelBuilder.Entity("CRMS.Models.FilePermission", b =>
-                {
-                    b.HasOne("CRMS.Models.FileModel", "File")
-                        .WithMany("Permissions")
-                        .HasForeignKey("FileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("File");
-                });
-
             modelBuilder.Entity("CRMS.Models.Suspect", b =>
                 {
                     b.HasOne("CRMS.Models.Case", "Case")
@@ -1151,11 +1060,6 @@ namespace CRMS.Migrations
             modelBuilder.Entity("CRMS.Models.Criminal", b =>
                 {
                     b.Navigation("CaseCriminals");
-                });
-
-            modelBuilder.Entity("CRMS.Models.FileModel", b =>
-                {
-                    b.Navigation("Permissions");
                 });
 
             modelBuilder.Entity("CRMS.Models.Team", b =>

@@ -19,6 +19,9 @@ namespace CRMS.Models
 
         [ForeignKey("TeamId")]
         public virtual Team Team { get; set; }
+
+        // Timestamp for when the user joined the team
+        public DateTime JoinDate { get; set; } = DateTime.UtcNow;
     }
 
 }
