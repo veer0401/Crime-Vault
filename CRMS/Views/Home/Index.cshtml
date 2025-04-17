@@ -1,5 +1,11 @@
 ﻿@{
     ViewData["Title"] = "Dashboard - Analytics";
+    var caseStats = (IEnumerable<dynamic>)ViewBag.CaseStats;
+    var criminalStats = (IEnumerable<dynamic>)ViewBag.CriminalStats;
+    var caseData = caseStats.Select(x => (int)x.Count).ToList();
+    var caseMonths = caseStats.Select(x => (string)x.Month).ToList();
+    var criminalData = criminalStats.Select(x => (int)x.Count).ToList();
+    var criminalMonths = criminalStats.Select(x => (string)x.Month).ToList();
 }
 
 @section VendorStyles {
@@ -36,3 +42,103 @@
 <div class="row g-6">
     <input type="hidden" id="loginSuccessFlag" value="@TempData["LoginSuccess"]" />    
 </div>
+
+<div class="container-xxl flex-grow-1 container-p-y">
+    <div class="row">
+        <!-- Cases Chart -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Cases Added (Last 6 Months)</h5>
+                </div>
+                <div class="card-body">
+                    <div id="casesChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Criminals Chart -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Criminals Added (Last 6 Months)</h5>
+                </div>
+                <div class="card-body">
+                    <div id="criminalsChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cases Chart
+        var caseOptions = {
+            series: [{
+                name: 'Cases',
+                data: @Json.Serialize(caseData)
+            }],
+            chart: {
+                type: 'bar',
+                height: 350,
+                toolbar: {
+                    show: false
+                }
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    horizontal: false,
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            xaxis: {
+                categories: @Json.Serialize(caseMonths)
+            },
+            colors: ['#696cff'],
+            grid: {
+                borderColor: '#f1f1f1',
+            }
+        };
+
+        var caseChart = new ApexCharts(document.querySelector("#casesChart"), caseOptions);
+        caseChart.render();
+
+        // Criminals Chart
+        var criminalOptions = {
+            series: [{
+                name: 'Criminals',
+                data: @Json.Serialize(criminalData)
+            }],
+            chart: {
+                type: 'bar',
+                height: 350,
+                toolbar: {
+                    show: false
+                }
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    horizontal: false,
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            xaxis: {
+                categories: @Json.Serialize(criminalMonths)
+            },
+            colors: ['#ff3e1d'],
+            grid: {
+                borderColor: '#f1f1f1',
+            }
+        };
+
+        var criminalChart = new ApexCharts(document.querySelector("#criminalsChart"), criminalOptions);
+        criminalChart.render();
+    });
+</script>

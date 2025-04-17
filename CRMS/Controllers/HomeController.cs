@@ -33,6 +33,44 @@ namespace CRMS.Controllers
 
         public IActionResult Index()
         {
+            // Get cases from last 6 months
+            var sixMonthsAgo = DateTime.UtcNow.AddMonths(-6);
+            var cases = _context.Cases
+                .Where(c => c.CreatedDate >= sixMonthsAgo)
+                .Select(c => new { c.CreatedDate })
+                .ToList();
+
+            // Process cases in memory
+            var caseStats = cases
+                .GroupBy(c => new { c.CreatedDate.Year, c.CreatedDate.Month })
+                .Select(g => new
+                {
+                    Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"),
+                    Count = g.Count()
+                })
+                .OrderBy(x => x.Month)
+                .ToList();
+
+            // Get criminals from last 6 months
+            var criminals = _context.Criminal
+                .Where(c => c.CreatedAt >= sixMonthsAgo)
+                .Select(c => new { c.CreatedAt })
+                .ToList();
+
+            // Process criminals in memory
+            var criminalStats = criminals
+                .GroupBy(c => new { c.CreatedAt.Year, c.CreatedAt.Month })
+                .Select(g => new
+                {
+                    Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"),
+                    Count = g.Count()
+                })
+                .OrderBy(x => x.Month)
+                .ToList();
+
+            ViewBag.CaseStats = caseStats;
+            ViewBag.CriminalStats = criminalStats;
+
             // Log the activity
             _activityLogService.LogActivityAsync(
                 "View",
