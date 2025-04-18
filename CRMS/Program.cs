@@ -56,12 +56,15 @@ using (var scope = app.Services.CreateScope())
     await SeedService.SeedDatabase(scope.ServiceProvider);
 }
 
-
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
+
+// Add error handling middleware
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 app.UseHttpsRedirection();
 // Add this if not already present

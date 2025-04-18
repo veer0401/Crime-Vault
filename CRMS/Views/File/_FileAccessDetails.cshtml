@@ -1,0 +1,79 @@
+@model List<CRMS.Controllers.FileAccessViewModel>
+
+@foreach (var access in Model)
+{
+    <tr>
+        <td>@access.UserName</td>
+        <td>
+            @if (access.IsApproved)
+            {
+                <span class="badge bg-success">Approved</span>
+            }
+            else
+            {
+                <span class="badge bg-warning">Pending</span>
+            }
+        </td>
+        <td>@(access.ApprovalDate?.ToString("g") ?? "Not approved")</td>
+        <td>
+            @if (access.IsApproved)
+            {
+                <button class="btn btn-sm btn-danger remove-access" 
+                        data-user-id="@access.UserId"
+                        data-file-id="@ViewBag.FileId"
+                        onclick="removeAccess('@access.UserId', @ViewBag.FileId)">
+                    <i class="ti ti-user-minus"></i> Remove Access
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-sm btn-success approve-access" 
+                        data-user-id="@access.UserId"
+                        data-file-id="@ViewBag.FileId"
+                        onclick="approveAccess('@access.UserId', @ViewBag.FileId)">
+                    <i class="ti ti-user-check"></i> Approve Access
+                </button>
+            }
+        </td>
+    </tr>
+}
+@if (!Model.Any())
+{
+    <tr>
+        <td colspan="4" class="text-center">No users have access to this file</td>
+    </tr>
+}
+
+<script>
+    function removeAccess(userId, fileId) {
+        if (confirm('Are you sure you want to remove this user\'s access?')) {
+            $.post('@Url.Action("RemoveAccess")', { fileId: fileId, userId: userId })
+                .done(function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                })
+                .fail(function () {
+                    alert('An error occurred while removing access.');
+                });
+        }
+    }
+
+    function approveAccess(userId, fileId) {
+        if (confirm('Are you sure you want to approve this user\'s access?')) {
+            $.post('@Url.Action("ApproveRequest")', { permissionId: fileId, userId: userId })
+                .done(function (response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                })
+                .fail(function () {
+                    alert('An error occurred while approving access.');
+                });
+        }
+    }
+</script> 

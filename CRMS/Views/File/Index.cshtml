@@ -52,6 +52,13 @@
                                         <i class="bx bx-key me-1"></i> Request Access
                                     </a>
                                 }
+                                @if (file.IsOwner)
+                                {
+                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#accessModal" 
+                                            onclick="loadAccessDetails(@file.Id)">
+                                        <i class="bx bx-user-check me-1"></i> View Access
+                                    </button>
+                                }
                             </td>
                         </tr>
                     }
@@ -59,4 +66,56 @@
             </table>
         </div>
     </div>
-</div> 
+</div>
+
+<!-- Access Details Modal -->
+<div class="modal fade" id="accessModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">File Access Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Status</th>
+                                <th>Approval Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accessTableBody">
+                            <!-- Access details will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadAccessDetails(fileId) {
+            $.get('@Url.Action("ViewAccessDetails")', { id: fileId })
+                .done(function (response) {
+                    $('#accessTableBody').html(response);
+                })
+                .fail(function (xhr, status, error) {
+                    $('#accessTableBody').html(`
+                        <tr>
+                            <td colspan="4" class="text-center text-danger">
+                                Error loading access details. Please try again.
+                            </td>
+                        </tr>
+                    `);
+                });
+        }
+    </script>
+} 

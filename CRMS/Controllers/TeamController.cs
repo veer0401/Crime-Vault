@@ -31,6 +31,8 @@ namespace CRMS.Controllers
         }
 
         // Show Team Creation Form
+        [HttpGet]
+        [Route("Create")]
         public IActionResult Create()
         {
             // Log the activity
@@ -41,7 +43,7 @@ namespace CRMS.Controllers
                 "Viewed team creation form"
             ).Wait();
 
-            return View();
+            return View(new TeamCreateModel());
         }
         public IActionResult Join()
         {
@@ -327,11 +329,30 @@ namespace CRMS.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Team team)
+        [Route("Create")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(TeamCreateModel model)
         {
             if (ModelState.IsValid)
             {
-                team.CreatedDate = DateTime.UtcNow;
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return Unauthorized();
+                }
+
+                // Generate a unique 8-character team code
+                string teamCode = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
+
+                var team = new Team
+                {
+                    Id = Guid.NewGuid(),
+                    Name = model.Name,
+                    TeamCode = teamCode,
+                    TeamLeaderId = user.Id,
+                    CreatedDate = DateTime.UtcNow
+                };
+
                 _context.Teams.Add(team);
                 await _context.SaveChangesAsync();
 
@@ -339,15 +360,15 @@ namespace CRMS.Controllers
                 await _activityLogService.LogActivityAsync(
                     "Create",
                     "Team",
-                    User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    $"Created new team: {team.Name}"
+                    team.Id.ToString(),
+                    $"Created new team '{team.Name}' with team code '{teamCode}'"
                 );
 
                 TempData["ToastMessage"] = $"Successfully created team: {team.Name}";
                 TempData["ToastType"] = "success";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Details), new { id = team.Id });
             }
-            return View(team);
+            return View(model);
         }
 
         [HttpPost]

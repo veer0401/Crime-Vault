@@ -148,6 +148,13 @@
                             </a>
                         </li>
                     </ul>
+                    <ul class="menu-sub">
+                        <li class='menu-item@(currentPage == "/Team/Join" ? " active" : "")'>
+                            <a asp-controller="Team" asp-action="Join" class="menu-link">
+                                <div data-i18n="Join Team">Join Team</div>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <!-- All Teams -->
                 <li class='menu-item@(currentPage == "/Team/AllTeams" ? " active" : "")'>
@@ -160,12 +167,44 @@
         </li>
 
         <!-- Files Section -->
-
         <li class='menu-item@(currentPage.StartsWith("/File") ? " active open" : "")'>
-            <a asp-controller="File" asp-action="Index" class="menu-link">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons ti ti-file"></i>
                 <div data-i18n="Files">Files</div>
             </a>
+            <ul class="menu-sub">
+                <!-- My Files -->
+                <li class='menu-item@(currentPage == "/File/MyFiles" ? " active" : "")'>
+                    <a href="javascript:void(0);" class="menu-link menu-toggle">
+                        <i class="menu-icon tf-icons ti ti-user"></i>
+                        <div data-i18n="My Files">My Files</div>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class='menu-item@(currentPage == "/File/MyFiles" ? " active" : "")'>
+                            <a asp-controller="File" asp-action="MyFiles" class="menu-link">
+                                <div data-i18n="View Files">View Files</div>
+                            </a>
+                        </li>
+                        <li class='menu-item@(currentPage == "/File/Upload" ? " active" : "")'>
+                            <a asp-controller="File" asp-action="Upload" class="menu-link">
+                                <div data-i18n="Upload File">Upload File</div>
+                            </a>
+                        </li>
+                        <li class='menu-item@(currentPage == "/File/ManageRequests" ? " active" : "")'>
+                            <a asp-controller="File" asp-action="ManageRequests" class="menu-link">
+                                <div data-i18n="Manage Requests">Manage Requests</div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- All Files -->
+                <li class='menu-item@(currentPage == "/File/Index" ? " active" : "")'>
+                    <a asp-controller="File" asp-action="Index" class="menu-link">
+                        <i class="menu-icon tf-icons ti ti-files"></i>
+                        <div data-i18n="All Files">All Files</div>
+                    </a>
+                </li>
+            </ul>
         </li>
         <!-- Messaging Section -->
         <li class='menu-item@(currentPage.StartsWith("/TeamMessage") ? " active" : "")'>

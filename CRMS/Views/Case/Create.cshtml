@@ -6,7 +6,6 @@
     Layout = "_ContentNavbarLayout";
     var currentUser = await UserManager.GetUserAsync(User);
     var userRoles = currentUser != null ? await UserManager.GetRolesAsync(currentUser) : new List<string>();
-    var canAssignTeams = userRoles.Contains("Warden") || userRoles.Contains("Sentinel Prime");
 }
 
 <div class="container-xxl flex-grow-1 container-p-y">
@@ -55,22 +54,6 @@
                     <span asp-validation-for="Location" class="text-danger"></span>
                 </div>
 
-                @if (canAssignTeams)
-                {
-                    <div class="mb-3">
-                        <label class="form-label">Assign Teams</label>
-                        <select asp-for="SelectedTeams" class="form-select" multiple>
-                            @if (ViewBag.Teams != null)
-                            {
-                                @foreach (var team in ViewBag.Teams)
-                                {
-                                    <option value="@team.Id">@team.Name</option>
-                                }
-                            }
-                        </select>
-                    </div>
-                }
-
                 <div class="text-end">
                     <button type="submit" class="btn btn-primary">Create Case</button>
                 </div>
@@ -81,12 +64,5 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script src="~/vendor/libs/select2/select2.js"></script>
-    <link href="~/vendor/libs/select2/select2.css" rel="stylesheet" />
-    <script>
-        $(document).ready(function() {
-            $('.form-select').select2();
-        });
-    </script>
 }
 

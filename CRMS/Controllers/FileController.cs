@@ -45,10 +45,22 @@ namespace CRMS.Controllers
                     UploadDate = f.UploadDate,
                     Description = f.Description,
                     UploadedBy = f.UploadedByUser != null ? f.UploadedByUser.FullName : "Unknown User",
+                    UploadedByUserId = f.UploadedByUserId,
                     CanDownload = f.UploadedByUserId == User.FindFirstValue(ClaimTypes.NameIdentifier) ||
                                 _context.FilePermissions.Any(fp => fp.FileId == f.Id && 
                                                                  fp.RequestedByUserId == User.FindFirstValue(ClaimTypes.NameIdentifier) && 
-                                                                 fp.IsApproved)
+                                                                 fp.IsApproved),
+                    IsOwner = f.UploadedByUserId == User.FindFirstValue(ClaimTypes.NameIdentifier),
+                    AccessList = _context.FilePermissions
+                        .Where(fp => fp.FileId == f.Id)
+                        .Select(fp => new FileAccessViewModel
+                        {
+                            UserId = fp.RequestedByUserId,
+                            UserName = _context.Users.Where(u => u.Id == fp.RequestedByUserId).Select(u => u.FullName).FirstOrDefault() ?? "Unknown User",
+                            ApprovalDate = fp.ApprovalDate,
+                            IsApproved = fp.IsApproved
+                        })
+                        .ToList()
                 })
                 .ToList();
             return View(files);
@@ -67,8 +79,20 @@ namespace CRMS.Controllers
                     FileSize = f.FileSize,
                     UploadDate = f.UploadDate,
                     Description = f.Description,
-                    UploadedBy = _context.Users.FirstOrDefault(u => u.Id == f.UploadedByUserId).FullName,
-                    CanDownload = true // User can always download their own files
+                    UploadedBy = _context.Users.Where(u => u.Id == f.UploadedByUserId).Select(u => u.FullName).FirstOrDefault() ?? "Unknown User",
+                    UploadedByUserId = f.UploadedByUserId,
+                    CanDownload = true, // User can always download their own files
+                    IsOwner = true,
+                    AccessList = _context.FilePermissions
+                        .Where(fp => fp.FileId == f.Id)
+                        .Select(fp => new FileAccessViewModel
+                        {
+                            UserId = fp.RequestedByUserId,
+                            UserName = _context.Users.Where(u => u.Id == fp.RequestedByUserId).Select(u => u.FullName).FirstOrDefault() ?? "Unknown User",
+                            ApprovalDate = fp.ApprovalDate,
+                            IsApproved = fp.IsApproved
+                        })
+                        .ToList()
                 })
                 .ToList();
             return View(files);
@@ -189,27 +213,20 @@ namespace CRMS.Controllers
         }
 
         [HttpPost]
-        public IActionResult ApproveRequest(int permissionId)
+        public IActionResult ApproveRequest(int permissionId, string userId)
         {
             var permission = _context.FilePermissions
-                .Include(fp => fp.File)
-                .FirstOrDefault(fp => fp.Id == permissionId && 
-                                    fp.File != null && 
-                                    fp.File.UploadedByUserId == User.FindFirstValue(ClaimTypes.NameIdentifier));
+                .FirstOrDefault(fp => fp.FileId == permissionId && fp.RequestedByUserId == userId);
 
             if (permission != null)
             {
                 permission.IsApproved = true;
                 permission.ApprovalDate = DateTime.Now;
                 _context.SaveChanges();
-                TempData["SuccessMessage"] = "Access request approved successfully.";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Request not found or you don't have permission to approve it.";
+                return Json(new { success = true, message = "Access approved successfully." });
             }
 
-            return RedirectToAction(nameof(ManageRequests));
+            return Json(new { success = false, message = "Permission not found." });
         }
 
         [HttpPost]
@@ -287,6 +304,71 @@ namespace CRMS.Controllers
                 return StatusCode(500, "An error occurred while processing your request.");
             }
         }
+
+        [HttpGet]
+        public IActionResult ViewAccessDetails(int id)
+        {
+            var file = _context.Files
+                .Include(f => f.Permissions)
+                .FirstOrDefault(f => f.Id == id);
+
+            if (file == null)
+            {
+                return NotFound();
+            }
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (file.UploadedByUserId != currentUserId)
+            {
+                return Forbid();
+            }
+
+            var accessList = _context.FilePermissions
+                .Where(fp => fp.FileId == id)
+                .Join(_context.Users,
+                    fp => fp.RequestedByUserId,
+                    u => u.Id,
+                    (fp, u) => new FileAccessViewModel
+                    {
+                        UserId = fp.RequestedByUserId,
+                        UserName = u.FullName,
+                        ApprovalDate = fp.ApprovalDate,
+                        IsApproved = fp.IsApproved
+                    })
+                .ToList();
+
+            ViewBag.FileId = id;
+
+            return PartialView("_FileAccessDetails", accessList);
+        }
+
+        [HttpPost]
+        public IActionResult RemoveAccess(int fileId, string userId)
+        {
+            var file = _context.Files.Find(fileId);
+            if (file == null)
+            {
+                return NotFound();
+            }
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (file.UploadedByUserId != currentUserId)
+            {
+                return Forbid();
+            }
+
+            var permission = _context.FilePermissions
+                .FirstOrDefault(fp => fp.FileId == fileId && fp.RequestedByUserId == userId);
+
+            if (permission != null)
+            {
+                _context.FilePermissions.Remove(permission);
+                _context.SaveChanges();
+                return Json(new { success = true, message = "Access removed successfully." });
+            }
+
+            return Json(new { success = false, message = "Access record not found." });
+        }
     }
 
     public class FileViewModel
@@ -298,7 +380,18 @@ namespace CRMS.Controllers
         public DateTime UploadDate { get; set; }
         public string Description { get; set; }
         public string UploadedBy { get; set; }
+        public string UploadedByUserId { get; set; }
         public bool CanDownload { get; set; }
+        public bool IsOwner { get; set; }
+        public List<FileAccessViewModel> AccessList { get; set; }
+    }
+
+    public class FileAccessViewModel
+    {
+        public string UserId { get; set; }
+        public string UserName { get; set; }
+        public DateTime? ApprovalDate { get; set; }
+        public bool IsApproved { get; set; }
     }
 
     public class FileRequestViewModel

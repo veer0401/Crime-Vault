@@ -3,25 +3,20 @@
   TempData.Keep();
   Layout = "_CommonMasterLayout";
 
-    ViewData["customizerHidden"] = (ViewData["customizerHidden"] ??= "customizer-hide");
-    TempData["menuHorizontal"] = false;
+  ViewData["customizerHidden"] = (ViewData["customizerHidden"] ??= "customizer-hide");
+  TempData["menuHorizontal"] = false;
   ViewData["contentNavbar"] = false;
-    @RenderSection("Scripts", required: false)
 
   @* Display elements *@
   ViewData["isNavbar"] = (ViewData["isNavbar"] ??= true);
   ViewData["isMenu"] = (ViewData["isMenu"] ??= true);
   ViewData["isFlex"] = (ViewData["isFlex"] ??= false);
   ViewData["isFooter"] = (ViewData["isFooter"] ??= true);
-  @* ViewData["customizerHidden"] = (ViewData["customizerHidden"] ??= "customizer-hide"); *@
-
 
   @*HTML Classes *@
   ViewData["navbarDetached"] = (ViewData["navbarDetached"] ?? "navbar-detached");
   ViewData["menuFixed"] = (ViewData["menuFixed"] ?? "layout-menu-fixed");
   ViewData["navbarType"] = (ViewData["navbarType"] ?? "layout-navbar-fixed");
-  @* ViewData["footerFixed"] = (ViewData["footerFixed"] ?? "layout-footer-fixed");
-    ViewData["menuCollapsed"] = (ViewData["menuCollapsed"] ?? "layout-menu-collapsed"); *@
 
   @*Content classes *@
   ViewData["container"] = (ViewData["container"] ?? "container-xxl");
@@ -57,10 +52,8 @@
       }
       <!-- / Navbar -->
 
-
       <!-- Content wrapper -->
       <div class="content-wrapper">
-
         <!-- Content -->
         <div class='@ViewData["container"] @(Convert.ToBoolean(@ViewData["isFlex"]) ? "d-flex align-items-stretch flex-grow-1 p-0" : "flex-grow-1 container-p-y")'>
           @RenderBody()
@@ -89,156 +82,89 @@
   <div class="drag-target"></div>
 </div>
 
-<div class="avatar avatar-online">
-    @using Microsoft.AspNetCore.Identity
-    @inject UserManager<Users> UserManager
-    @inject SignInManager<Users> SignInManager
-    @inject RoleManager<IdentityRole> RoleManager
+<!-- Anti-forgery token for AJAX requests -->
+@Html.AntiForgeryToken()
 
-    @if (SignInManager.IsSignedIn(User))
-    {
-        var user = await UserManager.GetUserAsync(User);
-        <span class="avatar-initial rounded-circle bg-label-primary">@user?.FullName[0]</span>
+@RenderSection("scripts", required: false)
+
+<!-- Auto-logout script -->
+<script>
+    // Helper function to show toast messages
+    function showToast(type, message, title = '') {
+        const toastOptions = {
+            closeButton: true,
+            progressBar: true,
+            timeOut: 3000,
+            extendedTimeOut: 1000,
+            positionClass: 'toast-top-right'
+        };
+
+        switch (type.toLowerCase()) {
+            case 'success':
+                toastr.success(message, title, toastOptions);
+                break;
+            case 'error':
+                toastr.error(message, title, toastOptions);
+                break;
+            case 'warning':
+                toastr.warning(message, title, toastOptions);
+                break;
+            case 'info':
+                toastr.info(message, title, toastOptions);
+                break;
+        }
     }
-</div>
 
-<a href="#" class="dropdown-item">
-  <div class="d-flex align-items-center">
-    <div class="flex-shrink-0 me-2">
-      <div class="avatar avatar-online">
-        @if (SignInManager.IsSignedIn(User))
-        {
-            var user = await UserManager.GetUserAsync(User);
-            var roles = await UserManager.GetRolesAsync(user);
-            <span class="avatar-initial rounded-circle bg-label-primary">@user?.FullName[0]</span>
-            <div class="flex-grow-1">
-                <h6 class="mb-0">@user?.FullName</h6>
-                <small class="text-muted">@(roles.Any() ? string.Join(", ", roles) : "No Role Assigned")</small>
-            </div>
-        }
-      </div>
-    </div>
-  </div>
-</a>
+    // Auto logout after 10 seconds of inactivity
+    let timeout;
+    const logoutTime = 150000; // 10 seconds in milliseconds
 
-<ul class="dropdown-menu dropdown-menu-end">
-  <li>
-    <a class="dropdown-item mt-0" asp-controller="Pages" asp-action="AccountSettings">
-      <div class="d-flex align-items-center">
-        <div class="flex-shrink-0 me-2">
-          <div class="avatar avatar-online">
-            @if (SignInManager.IsSignedIn(User))
-            {
-                var user = await UserManager.GetUserAsync(User);
-                var roles = await UserManager.GetRolesAsync(user);
-                <span class="avatar-initial rounded-circle bg-label-primary">@user?.FullName[0]</span>
-                <div class="flex-grow-1">
-                    <h6 class="mb-0">@user?.FullName</h6>
-                    <small class="text-muted">@(roles.Any() ? string.Join(", ", roles) : "No Role Assigned")</small>
-                </div>
-            }
-          </div>
-        </div>
-      </div>
-    </a>
-  </li>
-</ul>
+    function resetTimeout() {
+        clearTimeout(timeout);
+        timeout = setTimeout(logout, logoutTime);
+    }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- ... existing head content ... -->
-</head>
-<body>
-    <!-- Anti-forgery token for AJAX requests -->
-    @Html.AntiForgeryToken()
-
-    <!-- ... existing body content ... -->
-
-    @RenderSection("scripts", required: false)
-
-    <!-- Auto-logout script -->
-    <script>
-        // Helper function to show toast messages
-        function showToast(type, message, title = '') {
-            const toastOptions = {
-                closeButton: true,
-                progressBar: true,
-                timeOut: 3000,
-                extendedTimeOut: 1000,
-                positionClass: 'toast-top-right'
-            };
-
-            switch (type.toLowerCase()) {
-                case 'success':
-                    toastr.success(message, title, toastOptions);
-                    break;
-                case 'error':
-                    toastr.error(message, title, toastOptions);
-                    break;
-                case 'warning':
-                    toastr.warning(message, title, toastOptions);
-                    break;
-                case 'info':
-                    toastr.info(message, title, toastOptions);
-                    break;
-            }
-        }
-
-        // Auto logout after 10 seconds of inactivity
-        let timeout;
-        const logoutTime = 150000; // 10 seconds in milliseconds
-
-        function resetTimeout() {
-            clearTimeout(timeout);
-            timeout = setTimeout(logout, logoutTime);
-        }
-
-        async function logout() {
-            try {
-                const response = await fetch('/Account/AutoLogout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                    }
-                });
-
-                if (response.ok) {
-                    showToast('warning', 'You have been logged out due to inactivity', 'Session Expired');
-                    setTimeout(() => {
-                        window.location.href = '/Account/Login';
-                    }, 3000);
-                } else {
-                    console.error('Failed to logout:', response.statusText);
-                    window.location.href = '/Account/Login';
+    async function logout() {
+        try {
+            const response = await fetch('/Account/AutoLogout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
                 }
-            } catch (error) {
-                console.error('Error during logout:', error);
+            });
+
+            if (response.ok) {
+                showToast('warning', 'You have been logged out due to inactivity', 'Session Expired');
+                setTimeout(() => {
+                    window.location.href = '/Account/Login';
+                }, 3000);
+            } else {
+                console.error('Failed to logout:', response.statusText);
                 window.location.href = '/Account/Login';
             }
+        } catch (error) {
+            console.error('Error during logout:', error);
+            window.location.href = '/Account/Login';
         }
+    }
 
-        // Reset timeout on any user activity
-        document.addEventListener('mousemove', resetTimeout);
-        document.addEventListener('keypress', resetTimeout);
-        document.addEventListener('click', resetTimeout);
-        document.addEventListener('scroll', resetTimeout);
-        document.addEventListener('touchstart', resetTimeout);
-        document.addEventListener('touchmove', resetTimeout);
+    // Reset timeout on any user activity
+    document.addEventListener('mousemove', resetTimeout);
+    document.addEventListener('keypress', resetTimeout);
+    document.addEventListener('click', resetTimeout);
+    document.addEventListener('scroll', resetTimeout);
+    document.addEventListener('touchstart', resetTimeout);
+    document.addEventListener('touchmove', resetTimeout);
 
-        // Initialize timeout when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            resetTimeout();
-            
-            // Show welcome message if user just logged in
-            const loginSuccess = document.getElementById('loginSuccessFlag');
-            if (loginSuccess && loginSuccess.value === 'true') {
-                showToast('success', 'Welcome back! You have successfully logged in.', 'Login Successful');
-            }
-        });
-    </script>
-
-    <!-- ... any other existing scripts ... -->
-</body>
-</html>
+    // Initialize timeout when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        resetTimeout();
+        
+        // Show welcome message if user just logged in
+        const loginSuccess = document.getElementById('loginSuccessFlag');
+        if (loginSuccess && loginSuccess.value === 'true') {
+            showToast('success', 'Welcome back! You have successfully logged in.', 'Login Successful');
+        }
+    });
+</script> 

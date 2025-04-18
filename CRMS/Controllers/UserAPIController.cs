@@ -115,7 +115,7 @@ namespace CRMS.Controllers
         // Generate Random Password
         private string GenerateRandomPassword()
         {
-            return Guid.NewGuid().ToString().Substring(0, 8) + "@Abc1"; // Example: 8 char random password
+            return Guid.NewGuid().ToString().Substring(0, 8) + "@CrimeVault7"; // Example: 8 char random password
         }
 
         // Send Email with Password
